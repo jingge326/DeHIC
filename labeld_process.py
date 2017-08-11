@@ -1,3 +1,15 @@
+#-*-coding:UTF-8-*-
+"""
+Processing labeled Hyperion data.
+
+Constructing batches from labeled data for subsequent network training and 
+predicting
+
+"""
+# Authors: Jingge Xiao <jingge.xiao@gmail.com>
+#
+# Created on Fri Jul 28 10:21:50 2017
+
 import scipy.io as sio
 import scipy.interpolate as sip
 import numpy as np
@@ -5,26 +17,39 @@ import matplotlib.pyplot as plt
 import csv
 import os
 
-mat_contents = sio.loadmat(r'E:\Research\HyperspectralImageClassification\Experiment\Data\Labeled\IndianPines\Indian_pines_corrected.mat')
+# original file path
+mat_str = r'E:\Research\HyperspectralImageClassification\Experiment\Data\Labeled\IndianPines\Indian_pines_corrected.mat'
+
+# paths of files containing spectral information for spectral resampling
+ip_spec_file = r'E:\Research\HyperspectralImageClassification\Experiment\Data\Unlabeled\ing\IndianPines.csv'
+hyper_spec_file = r'E:\Research\HyperspectralImageClassification\Experiment\Data\Unlabeled\ing\Hyperion.csv'
+
+# set path of output data
+npy_str = r'E:\Research\HyperspectralImageClassification\Experiment\Data\npy\ip'
+
+
+# set batch size, which have to be same as that of unlabeled data.
+img_size = 15
+
+
+# read original data
+mat_contents = sio.loadmat(mat_str)
 original_image = mat_contents['indian_pines_corrected']
 
-#get indian pine spec points
-ip_spec_file = r'E:\Research\HyperspectralImageClassification\Experiment\Data\Unlabeled\ing\IndianPines.csv'
+# get spectral information, positions that have spectral values
 ip_point_list = []
 ip_csv_reader = csv.reader(open(ip_spec_file, encoding='utf-8'))
 for row in ip_csv_reader:
     ip_point_list.append(float(row[0]))
 ip_point_array=np.array(ip_point_list)
 
-#get hyperion spec points
-hyper_spec_file = r'E:\Research\HyperspectralImageClassification\Experiment\Data\Unlabeled\ing\Hyperion.csv'
 hyper_point_list = []
 hyper_csv_reader = csv.reader(open(hyper_spec_file, encoding='utf-8'))
 for row in hyper_csv_reader:
     hyper_point_list.append(float(row[0]))
 hyper_point_array=np.array(hyper_point_list)
 
-#interpolate spec
+# spectral resampling
 global_image = np.zeros((original_image.shape[0],original_image.shape[1],len(hyper_point_array)), dtype = np.int)
 for r in range(0,original_image.shape[0]):
     for c in range(0, original_image.shape[1]):
@@ -32,10 +57,7 @@ for r in range(0,original_image.shape[0]):
         f = sip.interp1d(ip_point_array, ip_spec_array)
         global_image[r,c,:] = f(hyper_point_array)
 
-#set batch size, must be an odd number
-img_size = 15
-
-#fill the margin area
+# fill the margin area with zero
 mar_size = int((img_size-1)/2)
 global_rows = global_image.shape[0]
 global_cols = global_image.shape[1]
@@ -53,35 +75,43 @@ for q in range(0, mar_size):
 
 larger_rows = larger_image.shape[0]
 larger_cols = larger_image.shape[1]
-mx_data = larger_image[0: larger_rows, 0: larger_cols, 0 ]
 
-#draw the picture
-fig = plt.figure(figsize=(20,20))
-ax = fig.add_subplot(223)
-cmap=plt.cm.hot #可以使用自定义的colormap  
-im=ax.imshow(mx_data,cmap=cmap)  
-plt.colorbar(im)
-
-npy_str = r'E:\Research\HyperspectralImageClassification\Experiment\Data\npy\ip'
-#construct pixel batchs
+# construct pixel batchs
 list_sub_image = []
 npy_cnt = 0
-for i in range(0, larger_cols):
+for i in range(0, larger_rows):
     for j in range(0, larger_cols):
         sub_image = larger_image[i:i+img_size, j:j+img_size, : ]
         sub_image = sub_image.reshape(1, img_size, img_size, sub_image.shape[2])
         list_sub_image.append(sub_image)
+        
+        # limit the length of lists in order to avoid much too large npy files
         if len(list_sub_image) == 1000:
             npy_cnt = npy_cnt + 1
             array_sub_image=np.concatenate(list_sub_image, axis=0)
+            
+            # output array to file
             np.save(os.path.join(npy_str, str(npy_cnt)+'.npy'), array_sub_image)
             list_sub_image = []
             print(npy_cnt)
         if j == larger_cols - img_size:
             break
+        
     if i == larger_cols - img_size:
         break
-
+    
+# output the last list to file 
 array_sub_image=np.concatenate(list_sub_image, axis=0)
-#output array to file
 np.save(os.path.join(npy_str, 'last.npy'), array_sub_image)
+
+
+# draw the picture of the data
+# This is not needed for data preprocess, if you want to have a look of the 
+# labeled data, you can modify and use these lines.
+mx_data = larger_image[0: larger_rows, 0: larger_cols, 0 ]
+fig = plt.figure(figsize=(20,20))
+ax = fig.add_subplot(223)
+cmap=plt.cm.hot
+im=ax.imshow(mx_data,cmap=cmap)  
+plt.colorbar(im)
+
