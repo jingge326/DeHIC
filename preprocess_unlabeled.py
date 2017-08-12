@@ -97,7 +97,7 @@ np.save(os.path.join(npy_str, 'last.npy'), array_sub_image)
 
 
 # Schematic diagram of spectral curve
-# This is not needed for data preprocess, if you want to observe the curve of 
+# This is not necessary for data preprocess, if you want to observe the curve of 
 # data points, you can modify and use these lines.
 d_y = array_sub_image[300,0,0,:]
 d_x = np.arange(0,len(array_sub_image[0,0,0,:]),1)

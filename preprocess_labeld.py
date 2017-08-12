@@ -106,7 +106,7 @@ np.save(os.path.join(npy_str, 'last.npy'), array_sub_image)
 
 
 # draw the picture of the data
-# This is not needed for data preprocess, if you want to have a look of the 
+# This is not necessary for data preprocess, if you want to have a look of the 
 # labeled data, you can modify and use these lines.
 mx_data = larger_image[0: larger_rows, 0: larger_cols, 0 ]
 fig = plt.figure(figsize=(20,20))
