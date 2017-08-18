@@ -2,9 +2,21 @@ from keras.layers import Input, Conv3D, MaxPooling3D, UpSampling3D
 from keras.models import Model
 from keras.datasets import mnist
 import numpy as np
+import os
 
+num_epochs = 3
 
-(x_train, _), (x_test, _) = mnist.load_data(r'E:\Research\HyperspectralImageClassification\Experiment\Data\others\mnist.npz')
+unlab_dir_str = r"D:\DeepLearning\Exp\data\npy\hyper"
+
+list_dir_strs = os.listdir(unlab_dir_str)
+    
+while num_epochs > 0:
+    for name_str in list_dir_strs:
+        npy_path = os.path.join(unlab_dir_str, name_str)
+        list_batches = np.load(npy_path)
+    
+
+(x_train, _), (x_test, _) = mnist.load_data()
 x_train = x_train.astype('float32') / 255.
 x_test = x_test.astype('float32') / 255.
 x_train = np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
