@@ -1,1 +1,0 @@
-D:\Professional\Anaconda3\envs\tensorflow\python.exe D:\Professional\Anaconda3\envs\tensorflow\Lib\site-packages\tensorflow\tensorboard\tensorboard.py --logdir=E:\Research\HyperspectralImageClassification\Experiment\Program\Explore\keras-master\examples\0_autoencoder
