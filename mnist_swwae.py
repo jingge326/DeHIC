@@ -32,17 +32,6 @@ def convresblock(x, nfeats=8, ksize=3, nskipped=2, elu=True):
     return layers.add([y0, y])
 
 
-def getwhere(x):
-    y_prepool, y_postpool = x
-    return K.gradients(K.sum(y_postpool), y_prepool)
-
-if K.backend() == 'tensorflow':
-    raise RuntimeError('This example can only run with the '
-                       'Theano backend for the time being, '
-                       'because it requires taking the gradient '
-                       'of a gradient, which isn\'t '
-                       'supported for all TF ops.')
-
 # This example assume 'channels_first' data format.
 K.set_image_data_format('channels_first')
 
@@ -104,13 +93,11 @@ y = img_input
 for i in range(nlayers):
     y_prepool = convresblock(y, nfeats=nfeats_all[i + 1], ksize=ksize)
     y = MaxPooling2D(pool_size=(pool_sizes[i], pool_sizes[i]))(y_prepool)
-    wheres[i] = layers.Lambda(getwhere, output_shape=lambda x: x[0])([y_prepool, y])
 
 # Now build the decoder, and use the stored 'where' masks to place the features
 for i in range(nlayers):
     ind = nlayers - 1 - i
     y = UpSampling2D(size=(pool_sizes[ind], pool_sizes[ind]))(y)
-    y = layers.multiply([y, wheres[ind]])
     y = convresblock(y, nfeats=nfeats_all[ind], ksize=ksize)
 
 # Use hard_simgoid to clip range of reconstruction

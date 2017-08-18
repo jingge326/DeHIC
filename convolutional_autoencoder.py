@@ -1,12 +1,11 @@
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D
 from keras.models import Model
-from keras.callbacks import TensorBoard
 from keras.datasets import mnist
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-(x_train, _), (x_test, _) = mnist.load_data(r'E:\Research\HyperspectralImageClassification\Experiment\Data\others\mnist.npz')
+(x_train, _), (x_test, _) = mnist.load_data()
 x_train = x_train.astype('float32') / 255.
 x_test = x_test.astype('float32') / 255.
 x_train = np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
