@@ -13,7 +13,7 @@ hyper_data_str = r"C:\DeepLearning\Exp\data\npy\ip\original_data\batches_ip.npy"
 
 hyper_lab_str = r"C:\DeepLearning\Exp\data\npy\ip\original_data\lable.npy"
 
-sub_samples_str = r"C:\DeepLearning\Exp\data\npy\ip\sub_samples"
+sub_samples_str = r"C:\DeepLearning\Exp\data\npy\ip"
 
 array_batches_hyper = np.load(hyper_data_str)
 array_hyper_lab = np.load(hyper_lab_str)
