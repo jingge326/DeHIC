@@ -16,14 +16,14 @@ import gc
 import matplotlib.pyplot as plt
 
 # set batch size, which have to be same as that of labeled data.
-img_size = 15
+img_size = 8
 
 # set path of output data
-npy_str = r'E:\Research\HyperspectralImageClassification\Experiment\Data\npy\hyper'
+npy_str = r'C:\DeepLearning\Exp\data\npy\hyper'
 
 # set path of input data
 # each input data is a stack of bands and saved as tif format
-tif_str = r'E:\Research\HyperspectralImageClassification\Experiment\Data\Unlabeled\ing\tif'
+tif_str = r'D:\DeepLearning\Exp\data\tif_scaled'
 
 # read the list of files
 fileObjectsList = []
@@ -56,30 +56,25 @@ for f in fileObjectsList:
                 break
             break_flag = False
             sub_image = dsmatrix[:, i:i+img_size, j:j+img_size]
-            my_sub_image = np.zeros((img_size, img_size, image_spec), dtype = np.int)
             
             # assign pixel values
-            for p in range(0, my_sub_image.shape[0]):
-                for q in range(0, my_sub_image.shape[1]):
-                    my_sub_image[p, q, :] = sub_image[:, p, q]
+            for p in range(0, sub_image.shape[1]):
+                for q in range(0, sub_image.shape[2]):
                     
                     # batches with "NoData" pixel is not allowed
-                    if np.mean(my_sub_image[p, q, :]) == 0:
+                    if np.mean(sub_image[:, p, q]) == 0.0:
                         break_flag = True
                         break
                     
                 if break_flag == True:
                     break
-                
-            if break_flag == True:
-                continue
             
-            my_sub_image = my_sub_image.reshape(1, img_size, img_size, my_sub_image.shape[2])
-            list_sub_image.append(my_sub_image)
+            if break_flag == False:
+                list_sub_image.append(sub_image)
             
             # limit the length of lists in order to avoid much too large npy files
-            if(len(list_sub_image)==1000):
-                array_sub_image=np.concatenate(list_sub_image, axis=0)
+            if(len(list_sub_image)==10000):
+                array_sub_image=np.array(list_sub_image)
                 
                 # output array to file
                 np.save(os.path.join(npy_str, str(num_list)+'.npy'), array_sub_image)
@@ -91,7 +86,7 @@ for f in fileObjectsList:
     gc.collect()
 
 # output the last list to file  
-array_sub_image=np.concatenate(list_sub_image, axis=0)
+array_sub_image=np.array(list_sub_image)
 np.save(os.path.join(npy_str, 'last.npy'), array_sub_image)
 
 
