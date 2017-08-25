@@ -2,6 +2,8 @@
 """
 Processing labeled Hyperion data.
 
+interpolation
+scale
 Constructing batches from labeled data for subsequent network training and 
 predicting
 
@@ -10,108 +12,125 @@ predicting
 #
 # Created on Fri Jul 28 10:21:50 2017
 
-import scipy.io as sio
 import scipy.interpolate as sip
+import sklearn.preprocessing as sp
+import scipy.io as sio
 import numpy as np
-import matplotlib.pyplot as plt
 import csv
 import os
 
-# original file path
-mat_str = r'E:\Research\HyperspectralImageClassification\Experiment\Data\Labeled\IndianPines\Indian_pines_corrected.mat'
 
-# paths of files containing spectral information for spectral resampling
-ip_spec_file = r'E:\Research\HyperspectralImageClassification\Experiment\Data\Unlabeled\ing\IndianPines.csv'
-hyper_spec_file = r'E:\Research\HyperspectralImageClassification\Experiment\Data\Unlabeled\ing\Hyperion.csv'
+# Original file path
+path_mat = r'D:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected.mat'
 
-# set path of output data
-npy_str = r'E:\Research\HyperspectralImageClassification\Experiment\Data\npy\ip'
+# Set path of output data
+path_interp_ip = r'D:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected_interp.npy'
 
+# Set path of output data
+path_scaled_ip = r'D:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected_interp_scaled.npy'
 
-# set batch size, which have to be same as that of unlabeled data.
-img_size = 15
+# Paths of files containing spectral information for spectral resampling
+path_ip_spec = r'D:\DeepLearning\Exp\data\Unlabled\IndianPines.csv'
+path_hyper_spec = r'D:\DeepLearning\Exp\data\Unlabled\Hyperion.csv'
 
+# Set path of output data
+path_batches = r'C:\DeepLearning\Exp\data\npy\ip\original_data'
 
-# read original data
-mat_contents = sio.loadmat(mat_str)
+# Set batch size, which have to be same as that of unlabeled data.
+img_size = 8
+
+# Read original data
+mat_contents = sio.loadmat(path_mat)
 original_image = mat_contents['indian_pines_corrected']
 
-# get spectral information, positions that have spectral values
-ip_point_list = []
-ip_csv_reader = csv.reader(open(ip_spec_file, encoding='utf-8'))
-for row in ip_csv_reader:
-    ip_point_list.append(float(row[0]))
-ip_point_array=np.array(ip_point_list)
+# Transpose the array to "channle first"
+original_image = original_image.transpose((2, 0, 1))
 
-hyper_point_list = []
-hyper_csv_reader = csv.reader(open(hyper_spec_file, encoding='utf-8'))
-for row in hyper_csv_reader:
-    hyper_point_list.append(float(row[0]))
-hyper_point_array=np.array(hyper_point_list)
+# Get spectral information, positions that have spectral values
+list_ip_points = []
+reader_ip_csv = csv.reader(open(path_ip_spec, encoding='utf-8'))
+for i_row in reader_ip_csv:
+    list_ip_points.append(float(i_row[0]))
+array_ip_points=np.array(list_ip_points)
 
-# spectral resampling
-global_image = np.zeros((original_image.shape[0],original_image.shape[1],len(hyper_point_array)), dtype = np.int)
-for r in range(0,original_image.shape[0]):
-    for c in range(0, original_image.shape[1]):
-        ip_spec_array = original_image[r,c,:]
-        f = sip.interp1d(ip_point_array, ip_spec_array)
-        global_image[r,c,:] = f(hyper_point_array)
+list_hyper_points = []
+reader_hyper_csv = csv.reader(open(path_hyper_spec, encoding='utf-8'))
+for i_row in reader_hyper_csv:
+    list_hyper_points.append(float(i_row[0]))
+array_hyper_points=np.array(list_hyper_points)
 
-# fill the margin area with zero
-mar_size = int((img_size-1)/2)
-global_rows = global_image.shape[0]
-global_cols = global_image.shape[1]
-global_spes = global_image.shape[2]
-larger_image = np.zeros((global_rows + mar_size*2, global_cols + mar_size*2, global_spes), dtype=np.int)
-larger_image[mar_size: global_rows + mar_size, mar_size: global_cols + mar_size, :] = global_image
+# Spectral resampling
+interp_image = np.zeros((len(array_hyper_points), original_image.shape[1],original_image.shape[2]))
+for r in range(0,original_image.shape[1]):
+    for c in range(0, original_image.shape[2]):
+        ip_spec_array = original_image[:,r,c]
+        f = sip.interp1d(array_ip_points, ip_spec_array)
+        interp_image[:,r,c] = f(array_hyper_points)
+
+# Expand the array for scale
+array_expand = interp_image[:,0,:]
+for i_row in range(1, interp_image.shape[1]):
+    tempmatirx = interp_image[:,i_row,:]
+    array_expand = np.hstack((array_expand,tempmatirx))
+        
+# Data normalization
+array_expand_scaled = sp.scale(array_expand.T)
+
+array_scaled = np.zeros_like(interp_image, dtype = float)
+for i_row in range(0, array_scaled.shape[1]):
+    array_scaled[:,i_row,:] = array_expand_scaled[i_row*array_scaled.shape[2]:
+        (i_row+1)*array_scaled.shape[2],:].T
+
+# Output the interpolated and scaled array
+np.save(path_scaled_ip, array_scaled)
+
+
+# change this equation if change img_size
+mar_size = int(img_size/2)
+
+# fill the marginal area with values in borders
+arr_scal_spes = array_scaled.shape[0]
+arr_scal_rows = array_scaled.shape[1]
+arr_scal_cols = array_scaled.shape[2]
+array_larger = np.zeros((arr_scal_spes, arr_scal_rows + mar_size*2, arr_scal_cols + mar_size*2))
+array_larger[:, mar_size: arr_scal_rows + mar_size, mar_size: arr_scal_cols + mar_size] = array_scaled
 for p in range(0, mar_size):
-    larger_image[p, mar_size: global_cols + mar_size, :] = larger_image[mar_size, mar_size: global_cols + mar_size, :]
-    larger_image[global_rows + mar_size + p, mar_size: global_cols + mar_size, :] = larger_image[global_rows + mar_size - 1, mar_size: global_cols + mar_size, :]
+    array_larger[:, p, mar_size: arr_scal_cols + mar_size] = array_larger[:, mar_size, mar_size: arr_scal_cols + mar_size]
+    array_larger[:, arr_scal_rows + mar_size + p, mar_size: arr_scal_cols + mar_size] = array_larger[:, arr_scal_rows + mar_size - 1, mar_size: arr_scal_cols + mar_size]
 
 for q in range(0, mar_size):
-    larger_image[0 : global_rows + mar_size*2, q, :] = larger_image[0 : global_rows + mar_size*2, mar_size, :]
-    larger_image[0 : global_rows + mar_size*2, global_cols + mar_size + q, :] = larger_image[0 : global_rows + mar_size*2, global_cols + mar_size - 1, :]
+    array_larger[:, 0 : arr_scal_rows + mar_size*2, q] = array_larger[:, 0 : arr_scal_rows + mar_size*2, mar_size]
+    array_larger[:, 0 : arr_scal_rows + mar_size*2, arr_scal_cols + mar_size + q] = array_larger[:, 0 : arr_scal_rows + mar_size*2, arr_scal_cols + mar_size - 1]
     
 
-larger_rows = larger_image.shape[0]
-larger_cols = larger_image.shape[1]
+larger_rows = array_larger.shape[1]
+larger_cols = array_larger.shape[2]
 
 # construct pixel batchs
 list_sub_image = []
 npy_cnt = 0
 for i in range(0, larger_rows):
     for j in range(0, larger_cols):
-        sub_image = larger_image[i:i+img_size, j:j+img_size, : ]
-        sub_image = sub_image.reshape(1, img_size, img_size, sub_image.shape[2])
-        list_sub_image.append(sub_image)
-        
-        # limit the length of lists in order to avoid much too large npy files
-        if len(list_sub_image) == 1000:
-            npy_cnt = npy_cnt + 1
-            array_sub_image=np.concatenate(list_sub_image, axis=0)
+        if i < larger_cols - img_size:
+            if j < larger_cols - img_size:        
+                sub_image = array_larger[:, i:i+img_size, j:j+img_size]              
+                t_vector = sub_image[:, int(img_size/2) -1, int(img_size/2) - 1]
+                t_cube = np.array([[t_vector, t_vector], [t_vector, t_vector]]).transpose((2, 0, 1))
+                sub_image[:, int(img_size/2) -1: int(img_size/2) +1, int(img_size/2) - 1:int(img_size/2) +1] = t_cube
+                
+                list_sub_image.append(sub_image)
+                
+        #        # limit the length of lists in order to avoid much too large npy files
+        #        if len(list_sub_image) == 10000:
+        #            npy_cnt = npy_cnt + 1
+        #            array_sub_image=np.array(list_sub_image)
+        #            
+        #            # output array to file
+        #            np.save(os.path.join(str_npy_path, str(npy_cnt)+'.npy'), array_sub_image)
+        #            list_sub_image = []
+        #            print(npy_cnt)
             
-            # output array to file
-            np.save(os.path.join(npy_str, str(npy_cnt)+'.npy'), array_sub_image)
-            list_sub_image = []
-            print(npy_cnt)
-        if j == larger_cols - img_size:
-            break
-        
-    if i == larger_cols - img_size:
-        break
     
 # output the last list to file 
-array_sub_image=np.concatenate(list_sub_image, axis=0)
-np.save(os.path.join(npy_str, 'last.npy'), array_sub_image)
-
-
-# draw the picture of the data
-# This is not necessary for data preprocess, if you want to have a look of the 
-# labeled data, you can modify and use these lines.
-mx_data = larger_image[0: larger_rows, 0: larger_cols, 0 ]
-fig = plt.figure(figsize=(20,20))
-ax = fig.add_subplot(223)
-cmap=plt.cm.hot
-im=ax.imshow(mx_data,cmap=cmap)  
-plt.colorbar(im)
-
+array_sub_image=np.array(list_sub_image)
+np.save(os.path.join(path_batches, 'batches_ip.npy'), array_sub_image)

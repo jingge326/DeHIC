@@ -12,108 +12,99 @@ Splitting original Hyperion data into patches for subsequent network training
 import numpy as np
 import gdal
 import os
-import gc
-import matplotlib.pyplot as plt
-import sys
-import scipy as sp
 
-#Set the path of source files
-sys.path.append(r'E:\Research\basic\github\GeoInfoMiner\code')
-import utils
 
-# set batch size, which have to be same as that of labeled data.
-img_size = 15
+# set path of input image data
+str_input_path = r'C:\DeepLearning\Exp\data\tif'
 
-# set path of output data
-npy_str = r'E:\Research\HyperspectralImageClassification\Experiment\Data\npy\hyper'
+# set path of output scaled image data
+str_output_path = r'C:\DeepLearning\Exp\data\tif_scaled'
 
-# set path of input data
-# each input data is a stack of bands and saved as tif format
-tif_str = r'E:\Research\HyperspectralImageClassification\Experiment\Data\Unlabeled\ing\tif'
+# set output path of statistics data file
+str_stat_path = r"C:\DeepLearning\Exp\data\tif_scaled\stat.npy"
 
 # read the list of files
-fileObjectsList = []
-for i in os.walk(tif_str):
+list_files_path = []
+for i in os.walk(str_input_path):
     for j in i[2]:
-        fileFormatStr = j[-3:]
-        if fileFormatStr == 'tif':
-            fileObjectsList.append(j)
+        str_file_format = j[-3:]
+        if str_file_format == 'tif':
+            str_tif_path = os.path.join(i[0], j)
+            list_files_path.append(str_tif_path)
 
-# get batches from original data
-list_sub_image = []
-num_list = 1
-for f in fileObjectsList:
-    print(f)
-    imagery_path = os.path.join(tif_str, f)
-    tupple_data =  utils.read_tif_as_frame(imagery_path)
-    data_frame = tupple_data[0]
-    rows = tupple_data[1]
-    cols= tupple_data[2]
-    num_bands= tupple_data[3]
+
+
+# Compute the global mean and the global standard deviation
+list_stat = []
+for i_band in range(0, 175):
+    list_data = []
+    for f in list_files_path:
+        # Read image
+        dataset = gdal.Open(f)
+        dsmatrix = dataset.ReadAsArray(xoff=0, yoff=0, xsize=dataset.RasterXSize, ysize=dataset.RasterYSize)
+        rows = dsmatrix.shape[1]
+        cols = dsmatrix.shape[2]
+        for i_row in range(0, rows):
+            for i_col in range(0, cols):
+                data_pixel = dsmatrix[i_band, i_row, i_col]
+                if data_pixel != 0:
+                    list_data.append(data_pixel)
     
-    data_frame_scaled = sp.scale(data_frame)
+        print(f)
     
-    dsmatrix = utils.dataframe_to_matrix(data_frame_scaled, rows, cols, num_bands)
+    value_mean = np.mean(list_data)
     
-    # read tif files
-    dataset = gdal.Open(imagery_path)
-    dsmatrix = dataset.ReadAsArray(xoff=0, yoff=0, xsize=dataset.RasterXSize, ysize=dataset.RasterYSize)
-    rows = dsmatrix.shape[1]
-    cols = dsmatrix.shape[2]    
-    num_bands = dsmatrix.shape[0]
+    value_std = np.std(list_data)
     
-    # construct pixel batches within original data margins
-    for i in range(0, rows, img_size):
-        if i >= rows - img_size:
-            break
-        for j in range(0, cols, img_size):
-            if j >= cols - img_size:
-                break
-            break_flag = False
-            sub_image = dsmatrix[:, i:i+img_size, j:j+img_size]
-            my_sub_image = np.zeros((img_size, img_size, num_bands), dtype = np.int)
+    list_stat.append((i_band, value_mean, value_std))
+    
+    print(list_stat[i_band])
+    
+
+np.save(str_stat_path, list_stat) 
+
+
+
+# Scale data
+# read the list of files
+for i_files in os.walk(str_input_path):
+    for str_name in i_files[2]:
+        str_file_format = str_name[-3:]
+        if str_file_format == 'tif':
+            str_tif_path = os.path.join(i_files[0], str_name)
             
-            # assign pixel values
-            for p in range(0, my_sub_image.shape[0]):
-                for q in range(0, my_sub_image.shape[1]):
-                    my_sub_image[p, q, :] = sub_image[:, p, q]
-                    
-                    # batches with "NoData" pixel is not allowed
-                    if np.mean(my_sub_image[p, q, :]) == 0:
-                        break_flag = True
-                        break
-                    
-                if break_flag == True:
-                    break
+            # Read image
+            dataset = gdal.Open(str_tif_path)
+            dsmatrix = dataset.ReadAsArray(xoff=0, yoff=0, xsize=dataset.RasterXSize, ysize=dataset.RasterYSize)
+            
+            # Get Geographic meta data
+            geo_trans_list = dataset.GetGeoTransform()
+            proj_str = dataset.GetProjection()
+            num_bands = dataset.RasterCount
+            # Unfold array into pandas DataFrame
+            rows = dsmatrix.shape[1]
+            cols = dsmatrix.shape[2]
                 
-            if break_flag == True:
-                continue
+            dsmatrix_scaled = np.zeros_like(a = dsmatrix, dtype = np.float)
             
-            my_sub_image = my_sub_image.reshape(1, img_size, img_size, my_sub_image.shape[2])
-            list_sub_image.append(my_sub_image)
+            for i_band in range(0, num_bands):
+                for i_row in range(0, rows):
+                    for i_col in range(0, cols):
+                        data_pixel = dsmatrix[i_band, i_row, i_col]
+                        if data_pixel != 0:
+                            dsmatrix_scaled[i_band, i_row, i_col] = (data_pixel - list_stat[i_band][1]) / list_stat[i_band][2]
+        
+            # Set output file path
+            str_out_tif = os.path.join(str_output_path, str_name)
             
-            # limit the length of lists in order to avoid much too large npy files
-            if(len(list_sub_image)==1000):
-                array_sub_image=np.concatenate(list_sub_image, axis=0)
-                
-                # output array to file
-                np.save(os.path.join(npy_str, str(num_list)+'.npy'), array_sub_image)
-                num_list = num_list + 1
-                list_sub_image = []
-
-    # collect memory
-    del(dsmatrix)
-    gc.collect()
-
-# output the last list to file  
-array_sub_image=np.concatenate(list_sub_image, axis=0)
-np.save(os.path.join(npy_str, 'last.npy'), array_sub_image)
-
-
-
-# Schematic diagram of spectral curve
-# This is not necessary for data preprocess, if you want to observe the curve of 
-# data points, you can modify and use these lines.
-d_y = array_sub_image[300,0,0,:]
-d_x = np.arange(0,len(array_sub_image[0,0,0,:]),1)
-plt.plot(d_x, d_y)
+            # Output result in "GeoTiff" format           
+            driver=gdal.GetDriverByName("GTiff")
+            driver.Register()
+            outDataset = driver.Create(str_out_tif, cols, rows, num_bands, gdal.GDT_Float64)
+            
+            # Define the projection coordinate system
+            outDataset.SetGeoTransform(geo_trans_list)
+            outDataset.SetProjection(proj_str)
+            for i_ob in range(0,num_bands):
+                outDataset.GetRasterBand(i_ob+1).WriteArray(dsmatrix_scaled[i_ob,:,:])
+            outDataset = None

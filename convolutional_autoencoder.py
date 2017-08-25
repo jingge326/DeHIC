@@ -31,7 +31,7 @@ x = UpSampling2D((2, 2))(x)
 decoded = Conv2D(1, (3, 3), activation='sigmoid', padding='same')(x)
 
 autoencoder = Model(input_img, decoded)
-autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+autoencoder.compile(optimizer='sgd', loss='mean_squared_error', metrics = ['accuracy'])
 
 cae = autoencoder.fit(x_train, x_train,
                 epochs=3,
