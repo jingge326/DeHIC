@@ -9,32 +9,38 @@ import numpy as np
 import os
 import random
 
-hyper_data_str = r"C:\DeepLearning\Exp\data\npy\ip\original_data\batches_ip.npy"
+hyper_data_str = r"G:\DeepLearning\Exp\data\npy\ip\original_data\batches_ip.npy"
 
-hyper_lab_str = r"C:\DeepLearning\Exp\data\npy\ip\original_data\lable.npy"
+hyper_lab_str = r"G:\DeepLearning\Exp\data\npy\ip\original_data\lable.npy"
 
-sub_samples_str = r"C:\DeepLearning\Exp\data\npy\ip"
+sub_samples_str = r"G:\DeepLearning\Exp\data\npy\ip"
 
 array_batches_hyper = np.load(hyper_data_str)
 array_hyper_lab = np.load(hyper_lab_str)
 
-array_num_class = np.zeros((17, 2), dtype = int)
-array_num_class[0:17,0] = np.arange(0, 17, 1)
+array_num_class = np.zeros((16, 2), dtype = int)
+array_num_class[0:16,0] = np.arange(1, 17, 1)
 
-for i_value in np.arange(0, 17):
+bag_pos = []
+bag_sub_samples = []
+for i_value in np.arange(0, 16):
     list_sub_samples = []
     list_pos = []
     for i_pos in range(0, len(array_hyper_lab)):
         lab_value = array_hyper_lab[i_pos]
-        if lab_value == i_value:
+        if lab_value == i_value + 1:
             list_sub_samples.append(array_batches_hyper[i_pos,:,:,:])
             list_pos.append(i_pos)
             
     i_num = len(list_sub_samples)
     array_num_class[i_value,1] = i_num
 
-    np.save(os.path.join(sub_samples_str, 'pos_class_'+str(i_value)+'.npy'), list_pos)
-    np.save(os.path.join(sub_samples_str, 'samples_class_'+str(i_value)+'.npy'), list_sub_samples)
+    # indices of bag plus one equals label values    
+    bag_pos.append(list_pos)
+    bag_sub_samples.append(list_sub_samples)
+
+np.save(os.path.join(sub_samples_str, 'pos_classes.npy'), bag_pos)
+np.save(os.path.join(sub_samples_str, 'sub_samples.npy'), bag_sub_samples)
 np.save(os.path.join(sub_samples_str, 'array_num_class.npy'), array_num_class)
 
 # Produce wanted numbers list
@@ -49,7 +55,7 @@ list_wanted_num = []
 # Way No.2 by given number
 wanted_num = 50
 sec_wanted_num = 15
-for i_num in array_num_class[0:17,1]:
+for i_num in array_num_class[0:16,1]:
     if i_num > wanted_num:
         list_wanted_num.append(wanted_num)
     else:
@@ -57,10 +63,10 @@ for i_num in array_num_class[0:17,1]:
 
 list_train_pos = []
 list_validate_pos = []
-for wanted_num in list_wanted_num:
-    train_pos = random.sample(list_pos, wanted_num)
+for i_num_pos in np.arange(0, len(list_wanted_num)):
+    train_pos = random.sample(bag_pos[i_num_pos], list_wanted_num[i_num_pos])
     list_train_pos.append(train_pos)
-    validate_pos = list(set(list_pos)^set(train_pos))
+    validate_pos = list(set(bag_pos[i_num_pos])^set(train_pos))
     list_validate_pos.append(validate_pos)
     
 # Output list of positions

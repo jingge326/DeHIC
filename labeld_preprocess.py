@@ -21,20 +21,25 @@ import os
 
 
 # Original file path
-path_mat = r'D:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected.mat'
+path_mat = r'G:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected.mat'
 
 # Set path of output data
-path_interp_ip = r'D:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected_interp.npy'
+path_interp_ip = r'G:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected_interp.npy'
 
 # Set path of output data
-path_scaled_ip = r'D:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected_interp_scaled.npy'
+path_scaled_ip = r'G:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected_interp_scaled.npy'
+
+# Path of input label value
+path_lab_mat = r'G:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_gt.mat'
+# Path of output label value
+hyper_lab_str = r"G:\DeepLearning\Exp\data\npy\ip\original_data\lable.npy"
 
 # Paths of files containing spectral information for spectral resampling
-path_ip_spec = r'D:\DeepLearning\Exp\data\Unlabled\IndianPines.csv'
-path_hyper_spec = r'D:\DeepLearning\Exp\data\Unlabled\Hyperion.csv'
+path_ip_spec = r'G:\DeepLearning\Exp\data\Unlabled\IndianPines.csv'
+path_hyper_spec = r'G:\DeepLearning\Exp\data\Unlabled\Hyperion.csv'
 
 # Set path of output data
-path_batches = r'C:\DeepLearning\Exp\data\npy\ip\original_data'
+path_batches = r'G:\DeepLearning\Exp\data\npy\ip\original_data'
 
 # Set batch size, which have to be same as that of unlabeled data.
 img_size = 8
@@ -129,8 +134,19 @@ for i in range(0, larger_rows):
         #            np.save(os.path.join(str_npy_path, str(npy_cnt)+'.npy'), array_sub_image)
         #            list_sub_image = []
         #            print(npy_cnt)
-            
-    
+   
 # output the last list to file 
-array_sub_image=np.array(list_sub_image)
-np.save(os.path.join(path_batches, 'batches_ip.npy'), array_sub_image)
+np.save(os.path.join(path_batches, 'batches_ip.npy'), np.array(list_sub_image))
+
+
+# Convert labeled data
+# Read original data
+mat_contents_lab = sio.loadmat(path_lab_mat)
+original_array_lab = mat_contents_lab['indian_pines_gt']
+
+list_lab = []
+for i_row_lab in np.arange(0, 145):
+    for i_col_lab in np.arange(0, 145):
+        list_lab.append(original_array_lab[i_row_lab, i_col_lab])
+    
+np.save(hyper_lab_str, np.array(list_lab))
