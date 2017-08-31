@@ -10,6 +10,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D
 from keras.models import Model
+from keras import regularizers
 
 num_classes = 16
 
@@ -30,26 +31,26 @@ path_y_test = r'M:\DeepLearning\Exp\data\npy\ip\validation_conv_y.npy'
 
 input_img = Input(shape=(175, 8, 8))
 
-x = Conv2D(122, (3, 3), activation='relu', padding='same', data_format = "channels_first")(input_img)
-x = Conv2D(88, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
+x = Conv2D(122, (3, 3), activation='relu', padding='same', data_format = "channels_first", activity_regularizer=regularizers.l1(10e-5))(input_img)
+x = Conv2D(88, (3, 3), activation='relu', padding='same', data_format = "channels_first", activity_regularizer=regularizers.l1(10e-5))(x)
 x = MaxPooling2D((2, 2), padding='same', data_format = "channels_first")(x)
-x = Conv2D(44, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
-x = Conv2D(22, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
+x = Conv2D(44, (3, 3), activation='relu', padding='same', data_format = "channels_first", activity_regularizer=regularizers.l1(10e-5))(x)
+x = Conv2D(22, (3, 3), activation='relu', padding='same', data_format = "channels_first", activity_regularizer=regularizers.l1(10e-5))(x)
 x = MaxPooling2D((2, 2), padding='same', data_format = "channels_first")(x)
-x = Conv2D(11, (2, 2), activation='relu', padding='same', data_format = "channels_first")(x)
-x = Conv2D(6, (2, 2), activation='relu', padding='same', data_format = "channels_first")(x)
+x = Conv2D(11, (2, 2), activation='relu', padding='same', data_format = "channels_first", activity_regularizer=regularizers.l1(10e-5))(x)
+x = Conv2D(6, (2, 2), activation='relu', padding='same', data_format = "channels_first", activity_regularizer=regularizers.l1(10e-5))(x)
 encoded = MaxPooling2D((2, 2), padding='same', data_format = "channels_first")(x)
 
 # at this point the representation is (4, 4, 8) i.e. 128-dimensional
 x = UpSampling2D((2, 2), data_format = "channels_first")(encoded)
-x = Conv2D(6, (2, 2), activation='relu', padding='same', data_format = "channels_first")(x)
-x = Conv2D(11, (2, 2), activation='relu', padding='same', data_format = "channels_first")(x)
+x = Conv2D(6, (2, 2), activation='relu', padding='same', data_format = "channels_first", activity_regularizer=regularizers.l1(10e-5))(x)
+x = Conv2D(11, (2, 2), activation='relu', padding='same', data_format = "channels_first", activity_regularizer=regularizers.l1(10e-5))(x)
 x = UpSampling2D((2, 2), data_format = "channels_first")(x)
-x = Conv2D(22, (2, 2), activation='relu', padding='same', data_format = "channels_first")(x)
-x = Conv2D(44, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
+x = Conv2D(22, (2, 2), activation='relu', padding='same', data_format = "channels_first", activity_regularizer=regularizers.l1(10e-5))(x)
+x = Conv2D(44, (3, 3), activation='relu', padding='same', data_format = "channels_first", activity_regularizer=regularizers.l1(10e-5))(x)
 x = UpSampling2D((2, 2), data_format = "channels_first")(x)
-x = Conv2D(88, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
-x = Conv2D(122, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
+x = Conv2D(88, (3, 3), activation='relu', padding='same', data_format = "channels_first", activity_regularizer=regularizers.l1(10e-5))(x)
+x = Conv2D(122, (3, 3), activation='relu', padding='same', data_format = "channels_first", activity_regularizer=regularizers.l1(10e-5))(x)
 decoded = Conv2D(175, (3, 3), activation='sigmoid', padding='same', data_format = "channels_first")(x)
 
 autoencoder = Model(input_img, decoded)

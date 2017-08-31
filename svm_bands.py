@@ -9,7 +9,7 @@ import numpy as np
 import os
 from sklearn.metrics import cohen_kappa_score
 
-sub_samples_str = r"C:\DeepLearning\Exp\data\npy\ip"
+sub_samples_str = r"M:\DeepLearning\Exp\data\npy\ip"
 
 x_train = np.load(os.path.join(sub_samples_str, 'training_pca_x.npy'))
 y_train = np.load(os.path.join(sub_samples_str, 'training_pca_y.npy'))
@@ -25,3 +25,5 @@ clf_svm.fit(x_train, y_train)
 y_predict=clf_svm.predict(x_test)
 
 kappa_value = cohen_kappa_score(y_predict, y_test)
+
+print(kappa_value)

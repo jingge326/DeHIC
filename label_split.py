@@ -9,14 +9,14 @@ import numpy as np
 import os
 import random
 
-hyper_data_str = r"G:\DeepLearning\Exp\data\npy\ip\original_data\batches_ip.npy"
+path_ip_batches = r"M:\DeepLearning\Exp\data\npy\ip\original_data\batches_ip.npy"
 
-hyper_lab_str = r"G:\DeepLearning\Exp\data\npy\ip\original_data\lable.npy"
+path_ip_labels = r"M:\DeepLearning\Exp\data\npy\ip\original_data\lable.npy"
 
-sub_samples_str = r"G:\DeepLearning\Exp\data\npy\ip"
+sub_samples_str = r"M:\DeepLearning\Exp\data\npy\ip"
 
-array_batches_hyper = np.load(hyper_data_str)
-array_hyper_lab = np.load(hyper_lab_str)
+array_ip_batches = np.load(path_ip_batches)
+array_ip_lab = np.load(path_ip_labels)
 
 array_num_class = np.zeros((16, 2), dtype = int)
 array_num_class[0:16,0] = np.arange(1, 17, 1)
@@ -26,10 +26,10 @@ bag_sub_samples = []
 for i_value in np.arange(0, 16):
     list_sub_samples = []
     list_pos = []
-    for i_pos in range(0, len(array_hyper_lab)):
-        lab_value = array_hyper_lab[i_pos]
+    for i_pos in range(0, len(array_ip_lab)):
+        lab_value = array_ip_lab[i_pos]
         if lab_value == i_value + 1:
-            list_sub_samples.append(array_batches_hyper[i_pos,:,:,:])
+            list_sub_samples.append(array_ip_batches[i_pos,:,:,:])
             list_pos.append(i_pos)
             
     i_num = len(list_sub_samples)
@@ -82,12 +82,12 @@ for i_cla_lab in np.arange(0, len(list_train_pos)):
     bags_pos_train = list_train_pos[i_cla_lab]
     bags_pos_validate = list_validate_pos[i_cla_lab]
     for i_pos_tra in bags_pos_train:
-        x_train.append(array_batches_hyper[i_pos_tra,:,:,:])
-        y_train.append(array_hyper_lab[i_pos_tra])
+        x_train.append(array_ip_batches[i_pos_tra,:,:,:])
+        y_train.append(array_ip_lab[i_pos_tra])
     
     for i_pos_val in bags_pos_validate:
-        x_test.append(array_batches_hyper[i_pos_val,:,:,:])
-        y_test.append(array_hyper_lab[i_pos_val])
+        x_test.append(array_ip_batches[i_pos_val,:,:,:])
+        y_test.append(array_ip_lab[i_pos_val])
 
 x_train = np.array(x_train)
 y_train = np.array(y_train)

@@ -19,11 +19,12 @@ import matplotlib.pyplot as plt
 img_size = 8
 
 # set path of output data
-npy_str = r'C:\DeepLearning\Exp\data\npy\hyper'
+npy_str = r'M:\DeepLearning\Exp\data\npy\hyper\list'
+path_unlab_batches = r"M:\DeepLearning\Exp\data\npy\hyper\unlabel_batches.npy"
 
 # set path of input data
 # each input data is a stack of bands and saved as tif format
-tif_str = r'D:\DeepLearning\Exp\data\tif_scaled'
+tif_str = r'M:\DeepLearning\Exp\data\tif_scaled'
 
 # read the list of files
 fileObjectsList = []
@@ -89,6 +90,17 @@ for f in fileObjectsList:
 array_sub_image=np.array(list_sub_image)
 np.save(os.path.join(npy_str, 'last.npy'), array_sub_image)
 
+
+list_dir_strs = os.listdir(npy_str)
+name_str = list_dir_strs[0]
+npy_path = os.path.join(npy_str, name_str)
+array_batches = np.load(npy_path)
+for i_name in np.arange(1, len(list_dir_strs)):
+    name_str = list_dir_strs[i_name]
+    npy_path = os.path.join(npy_str, name_str)
+    tmp_array_batches = np.load(npy_path)
+    array_batches = np.vstack((array_batches,tmp_array_batches)) 
+np.save(path_unlab_batches, array_batches) 
 
 
 # Schematic diagram of spectral curve

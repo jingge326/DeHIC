@@ -18,28 +18,29 @@ import scipy.io as sio
 import numpy as np
 import csv
 import os
+import matplotlib.pyplot as plt
 
 
 # Original file path
-path_mat = r'G:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected.mat'
+path_mat = r'M:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected.mat'
 
 # Set path of output data
-path_interp_ip = r'G:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected_interp.npy'
+path_interp_ip = r'M:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected_interp.npy'
 
 # Set path of output data
-path_scaled_ip = r'G:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected_interp_scaled.npy'
+path_scaled_ip = r'M:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected_interp_scaled.npy'
 
 # Path of input label value
-path_lab_mat = r'G:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_gt.mat'
+path_lab_mat = r'M:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_gt.mat'
 # Path of output label value
-hyper_lab_str = r"G:\DeepLearning\Exp\data\npy\ip\original_data\lable.npy"
+hyper_lab_str = r"M:\DeepLearning\Exp\data\npy\ip\original_data\lable.npy"
 
 # Paths of files containing spectral information for spectral resampling
-path_ip_spec = r'G:\DeepLearning\Exp\data\Unlabled\IndianPines.csv'
-path_hyper_spec = r'G:\DeepLearning\Exp\data\Unlabled\Hyperion.csv'
+path_ip_spec = r'M:\DeepLearning\Exp\data\Unlabled\IndianPines.csv'
+path_hyper_spec = r'M:\DeepLearning\Exp\data\Unlabled\Hyperion.csv'
 
 # Set path of output data
-path_batches = r'G:\DeepLearning\Exp\data\npy\ip\original_data'
+path_batches = r'M:\DeepLearning\Exp\data\npy\ip\original_data'
 
 # Set batch size, which have to be same as that of unlabeled data.
 img_size = 8
@@ -111,14 +112,31 @@ for q in range(0, mar_size):
 larger_rows = array_larger.shape[1]
 larger_cols = array_larger.shape[2]
 
+
+#draw the picture
+mx_data = array_larger[0, 0: larger_rows, 0: larger_cols]
+i = 44
+j = 44
+#mx_data = array_larger[80, i:i+5, j:j+5]
+fig = plt.figure(figsize=(20,20))
+ax = fig.add_subplot(223)
+cmap=plt.cm.hot #可以使用自定义的colormap  
+im=ax.imshow(mx_data,cmap=cmap)  
+plt.colorbar(im)
+
+
+
 # construct pixel batchs
 list_sub_image = []
 npy_cnt = 0
 for i in range(0, larger_rows):
     for j in range(0, larger_cols):
-        if i < larger_cols - img_size:
-            if j < larger_cols - img_size:        
-                sub_image = array_larger[:, i:i+img_size, j:j+img_size]              
+        if i < larger_rows - img_size:
+            if j < larger_cols - img_size:
+                
+                # np.array() can't be lost, otherwise array_larger's values will be modified
+                sub_image = np.array(array_larger[:, i:i+img_size, j:j+img_size])
+                
                 t_vector = sub_image[:, int(img_size/2) -1, int(img_size/2) - 1]
                 t_cube = np.array([[t_vector, t_vector], [t_vector, t_vector]]).transpose((2, 0, 1))
                 sub_image[:, int(img_size/2) -1: int(img_size/2) +1, int(img_size/2) - 1:int(img_size/2) +1] = t_cube

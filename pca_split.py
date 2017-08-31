@@ -10,11 +10,11 @@ import scipy.io as sio
 import numpy as np
 import os
 
-path_mat = r'D:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected.mat'
+path_mat = r'M:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected.mat'
 
-hyper_lab_str = r"C:\DeepLearning\Exp\data\npy\ip\original_data\lable.npy"
+hyper_lab_str = r"M:\DeepLearning\Exp\data\npy\ip\original_data\lable.npy"
 
-sub_samples_str = r"C:\DeepLearning\Exp\data\npy\ip"
+sub_samples_str = r"M:\DeepLearning\Exp\data\npy\ip"
 
 # Read original data
 mat_contents = sio.loadmat(path_mat)
@@ -53,7 +53,7 @@ for i_cla_lab in np.arange(0, len(list_train_pos)):
         y_train.append(array_hyper_lab[i_pos_tra])
     
     for i_pos_val in bags_pos_validate:
-        x_test.append(array_pca[i_pos_tra,:])
+        x_test.append(array_pca[i_pos_val,:])
         y_test.append(array_hyper_lab[i_pos_val])
 
 x_train = np.array(x_train)
