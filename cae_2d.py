@@ -61,8 +61,12 @@ early_stopping = EarlyStopping(monitor='loss', patience=2)
 # Training with unlabeled data
 array_batches = np.load(path_unlab_batches)
 t1 = time.time()
-cae = autoencoder.fit(x=array_batches, y=array_batches, batch_size=100, 
-                      epochs=200, callbacks=[early_stopping])
+
+#cae = autoencoder.fit(x=array_batches, y=array_batches, batch_size=100, 
+#                      epochs=200, callbacks=[early_stopping])
+
+cae = autoencoder.fit(x=array_batches, y=array_batches, batch_size=100, epochs=250)
+
 t2 = time.time()
 t2_1 = t2 - t1
 
@@ -109,4 +113,7 @@ clf_svm.fit(x_train_co, y_train)
 # Predict lables based on image data
 y_predict=clf_svm.predict(x_test_co)
 kappa_value = cohen_kappa_score(y_predict, y_test)
+
 print(kappa_value)
+print(t2_1)
+print(t4_3)
