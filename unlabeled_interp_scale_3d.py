@@ -18,20 +18,20 @@ import scipy.interpolate as sip
 
 
 # set path of input image data
-str_input_path = r'M:\DeepLearning\Exp\data\tif'
+str_input_path = r'D:\DeepLearning\Exp\data\tif'
 
 # set path of output interpolated image data
-str_out_interp_path = r'M:\DeepLearning\Exp\data\tif_interp'
+str_out_interp_path = r'E:\DeepLearning\Exp\data\tif_interp'
 
 # Paths of files containing spectral information for spectral resampling
-path_interp_spec = r'M:\DeepLearning\Exp\data\Unlabled\pos_3d_180.csv'
-path_hyper_spec = r'M:\DeepLearning\Exp\data\Unlabled\Hyperion.csv'
+path_interp_spec = r'E:\DeepLearning\Exp\data\Unlabled\pos_3d_180.csv'
+path_hyper_spec = r'E:\DeepLearning\Exp\data\Unlabled\Hyperion.csv'
 
 # set path of output scaled image data
-str_out_scaled_path = r'M:\DeepLearning\Exp\data\tif_scaled_interp'
+str_out_scaled_path = r'E:\DeepLearning\Exp\data\tif_scaled_interp'
 
 # set output path of statistics data file
-str_stat_path = r"M:\DeepLearning\Exp\data\tif_scaled_interp\stat.npy"
+str_stat_path = r"E:\DeepLearning\Exp\data\tif_scaled_interp\stat.npy"
 
 
 # Get spectral information, positions that have spectral values
@@ -40,6 +40,8 @@ reader_ip_csv = csv.reader(open(path_interp_spec, encoding='utf-8'))
 for i_row in reader_ip_csv:
     list_interp_points.append(float(i_row[0]))
 array_interp_points=np.array(list_interp_points)
+
+interp_bands = len(array_interp_points)
 
 list_hyper_points = []
 reader_hyper_csv = csv.reader(open(path_hyper_spec, encoding='utf-8'))
@@ -61,12 +63,13 @@ for i_files in os.walk(str_input_path):
             # Get Geographic meta data
             geo_trans_list = dataset.GetGeoTransform()
             proj_str = dataset.GetProjection()
-            num_bands = dataset.RasterCount
+            
             # Unfold array into pandas DataFrame
             rows = dsmatrix.shape[1]
             cols = dsmatrix.shape[2]
                 
-            dsmatrix_interp = np.zeros((len(array_interp_points), rows, cols), dtype = np.float)
+            dsmatrix_interp = np.zeros((interp_bands, rows, cols), dtype = np.float)
+            
             
             for i_row in range(0, rows):
                 for i_col in range(0, cols):
@@ -81,12 +84,12 @@ for i_files in os.walk(str_input_path):
             # Output result in "GeoTiff" format           
             driver=gdal.GetDriverByName("GTiff")
             driver.Register()
-            outDataset = driver.Create(str_out_tif, cols, rows, num_bands, gdal.GDT_Float64)
+            outDataset = driver.Create(str_out_tif, cols, rows, interp_bands, gdal.GDT_Float64)
             
             # Define the projection coordinate system
             outDataset.SetGeoTransform(geo_trans_list)
             outDataset.SetProjection(proj_str)
-            for i_ob in range(0,num_bands):
+            for i_ob in range(0,interp_bands):
                 outDataset.GetRasterBand(i_ob+1).WriteArray(dsmatrix_interp[i_ob,:,:])
             outDataset = None
  
@@ -109,7 +112,7 @@ for i in os.walk(str_out_interp_path):
 
 # Compute the global mean and the global standard deviation
 list_stat = []
-for i_band in range(0, 175):
+for i_band in range(0, interp_bands):
     list_data = []
     for f in list_files_path:
         # Read image
@@ -120,7 +123,7 @@ for i_band in range(0, 175):
         for i_row in range(0, rows):
             for i_col in range(0, cols):
                 data_pixel = dsmatrix[i_band, i_row, i_col]
-                if data_pixel != 0:
+                if data_pixel > 0.0:
                     list_data.append(data_pixel)
     
         print(f)
@@ -136,7 +139,11 @@ for i_band in range(0, 175):
 
 np.save(str_stat_path, list_stat) 
 
+array_stat = np.load(str_stat_path)
 
+ # collect memory
+del(dsmatrix)
+gc.collect()
 
 # Scale data
 # read the list of files
@@ -148,25 +155,24 @@ for i_files in os.walk(str_out_interp_path):
             
             # Read image
             dataset = gdal.Open(str_tif_path)
-            dsmatrix = dataset.ReadAsArray(xoff=0, yoff=0, xsize=dataset.RasterXSize, ysize=dataset.RasterYSize)
+            dsmatrix_scaled = dataset.ReadAsArray(xoff=0, yoff=0, xsize=dataset.RasterXSize, ysize=dataset.RasterYSize)
             
             # Get Geographic meta data
             geo_trans_list = dataset.GetGeoTransform()
             proj_str = dataset.GetProjection()
             num_bands = dataset.RasterCount
             # Unfold array into pandas DataFrame
-            rows = dsmatrix.shape[1]
-            cols = dsmatrix.shape[2]
-                
-            dsmatrix_scaled = np.zeros_like(a = dsmatrix, dtype = np.float)
+            rows = dsmatrix_scaled.shape[1]
+            cols = dsmatrix_scaled.shape[2]
             
-            for i_band in range(0, num_bands):
-                for i_row in range(0, rows):
-                    for i_col in range(0, cols):
-                        data_pixel = dsmatrix[i_band, i_row, i_col]
-                        if data_pixel != 0:
-                            dsmatrix_scaled[i_band, i_row, i_col] = (data_pixel - list_stat[i_band][1]) / list_stat[i_band][2]
-        
+            
+            for i_row in range(0, rows):
+                for i_col in range(0, cols):
+                    if np.mean(dsmatrix_scaled[:, i_row, i_col])!=0.0:
+                        for i_band in range(0, num_bands):
+                            data_pixel = dsmatrix_scaled[i_band, i_row, i_col]
+                            dsmatrix_scaled[i_band, i_row, i_col] = (data_pixel - array_stat[i_band, 1]) / array_stat[i_band, 2]
+            
             # Set output file path
             str_out_tif = os.path.join(str_out_scaled_path, str_name)
             

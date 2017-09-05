@@ -19,12 +19,12 @@ import matplotlib.pyplot as plt
 img_size = 8
 
 # set path of output data
-npy_str = r'M:\DeepLearning\Exp\data\npy\hyper\list'
-path_unlab_batches = r"M:\DeepLearning\Exp\data\npy\hyper\unlabel_batches.npy"
+npy_str = r'E:\DeepLearning\Exp\data\npy\3d\hyper\list'
+path_unlab_batches = r"E:\DeepLearning\Exp\data\npy\3d\hyper\unlabel_batches.npy"
 
 # set path of input data
 # each input data is a stack of bands and saved as tif format
-tif_str = r'M:\DeepLearning\Exp\data\tif_scaled'
+tif_str = r'C:\DeepLearning\Exp\data\tif_scaled_interp'
 
 # read the list of files
 fileObjectsList = []

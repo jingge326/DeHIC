@@ -12,11 +12,13 @@ import os
 
 num_com = 11
 
-path_mat = r'M:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected.mat'
+path_ip = r"E:\DeepLearning\Exp\data\original\Labeled\IndianPines"
 
-hyper_lab_str = r"M:\DeepLearning\Exp\data\npy\ip\original_data\lable.npy"
+path_pca = r"E:\DeepLearning\Exp\data\ing\pca"
 
-sub_samples_str = r"M:\DeepLearning\Exp\data\npy\ip"
+path_mat = os.path.join(path_ip, "Indian_pines_corrected.mat")
+
+path_lab = os.path.join(path_ip, "lable.npy")
 
 # Read original data
 mat_contents = sio.loadmat(path_mat)
@@ -43,9 +45,9 @@ x_train = []
 y_train = []
 x_test = []
 y_test = []
-list_train_pos = np.load(os.path.join(sub_samples_str, 'train_samples_pos.npy'))
-list_validate_pos = np.load(os.path.join(sub_samples_str, 'validate_samples_pos.npy'))
-array_hyper_lab = np.load(hyper_lab_str)
+list_train_pos = np.load(os.path.join(path_ip, 'train_samples_pos.npy'))
+list_validate_pos = np.load(os.path.join(path_ip, 'validate_samples_pos.npy'))
+array_hyper_lab = np.load(path_lab)
 
 for i_cla_lab in np.arange(0, len(list_train_pos)):
     bags_pos_train = list_train_pos[i_cla_lab]
@@ -63,7 +65,7 @@ y_train = np.array(y_train)
 x_test = np.array(x_test)
 y_test = np.array(y_test)
 
-np.save(os.path.join(sub_samples_str, 'training_pca_x_' + str(num_com)), x_train)
-np.save(os.path.join(sub_samples_str, 'training_pca_y_' + str(num_com)), y_train)
-np.save(os.path.join(sub_samples_str, 'validation_pca_x_' + str(num_com)), x_test)
-np.save(os.path.join(sub_samples_str, 'validation_pca_y_' + str(num_com)), y_test)
+np.save(os.path.join(path_pca, 'training_pca_x_' + str(num_com)), x_train)
+np.save(os.path.join(path_pca, 'training_pca_y_' + str(num_com)), y_train)
+np.save(os.path.join(path_pca, 'validation_pca_x_' + str(num_com)), x_test)
+np.save(os.path.join(path_pca, 'validation_pca_y_' + str(num_com)), y_test)

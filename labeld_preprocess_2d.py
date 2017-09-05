@@ -154,7 +154,7 @@ for i in range(0, larger_rows):
         #            print(npy_cnt)
    
 # output the last list to file 
-np.save(os.path.join(path_batches, 'batches_ip.npy'), np.array(list_sub_image))
+np.save(os.path.join(path_batches, 'patches_ip.npy'), np.array(list_sub_image))
 
 
 # Convert labeled data
