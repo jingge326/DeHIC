@@ -19,12 +19,12 @@ import matplotlib.pyplot as plt
 img_size = 8
 
 # set path of output data
-npy_str = r'E:\DeepLearning\Exp\data\ing\3d\hyper\list'
-path_unlab_batches = r"E:\DeepLearning\Exp\data\ing\3d\hyper\unlabel_batches.npy"
+npy_str = r'M:\DeepLearning\Exp\data\ing\3d\hyper\list'
+path_unlab_batches = r"M:\DeepLearning\Exp\data\ing\3d\hyper\unlabel_batches.npy"
 
 # set path of input data
 # each input data is a stack of bands and saved as tif format
-tif_str = r'C:\DeepLearning\Exp\data\tif_scaled_interp'
+tif_str = r'M:\DeepLearning\Exp\data\ing\3d\tif_interp_scaled'
 
 # read the list of files
 fileObjectsList = []
@@ -36,7 +36,6 @@ for i in os.walk(tif_str):
 
 # get batches from original data
 list_sub_image = []
-mold_sub_image = np.zeros((1, 180, img_size, img_size), dtype = float)
 num_list = 1
 for f in fileObjectsList:
     print(f)
@@ -72,8 +71,7 @@ for f in fileObjectsList:
                     break
             
             if break_flag == False:
-                mold_sub_image[0, :, :, :] = sub_image
-                list_sub_image.append(mold_sub_image)
+                list_sub_image.append(sub_image.reshape((1, 180, img_size, img_size)))
             
             # limit the length of lists in order to avoid much too large npy files
             if(len(list_sub_image)==10000):
@@ -96,13 +94,13 @@ np.save(os.path.join(npy_str, 'last.npy'), array_sub_image)
 list_dir_strs = os.listdir(npy_str)
 name_str = list_dir_strs[0]
 npy_path = os.path.join(npy_str, name_str)
-array_batches = np.load(npy_path)
+array_patches = np.load(npy_path)
 for i_name in np.arange(1, len(list_dir_strs)):
     name_str = list_dir_strs[i_name]
     npy_path = os.path.join(npy_str, name_str)
-    tmp_array_batches = np.load(npy_path)
-    array_batches = np.vstack((array_batches,tmp_array_batches)) 
-np.save(path_unlab_batches, array_batches) 
+    tmp_array_patches = np.load(npy_path)
+    array_patches = np.vstack((array_patches,tmp_array_patches)) 
+np.save(path_unlab_batches, array_patches) 
 
 
 # Schematic diagram of spectral curve

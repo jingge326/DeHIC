@@ -30,25 +30,29 @@ path_y_test = os.path.join(path_ip_3d, "validation_3d_conv_y.npy")
 
 input_img = Input(shape=(1, 180, 8, 8))
 
-x = Conv3D(2, (7, 3, 3), activation='relu', padding='same', data_format = "channels_first")(input_img)
+x = Conv3D(4, (7, 3, 3), activation='relu', padding='same', data_format = "channels_first")(input_img)
 x = MaxPooling3D((5, 2, 2), padding='same', data_format = "channels_first")(x)
-x = Conv3D(4, (5, 3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
-x = MaxPooling3D((4, 2, 2), padding='same', data_format = "channels_first")(x)
+x = Conv3D(6, (5, 3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
+x = MaxPooling3D((3, 2, 2), padding='same', data_format = "channels_first")(x)
 x = Conv3D(8, (3, 3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
 x = MaxPooling3D((3, 2, 2), padding='same', data_format = "channels_first")(x)
+x = Conv3D(10, (3, 1, 1), activation='relu', padding='same', data_format = "channels_first")(x)
+x = MaxPooling3D((2, 1, 1), padding='same', data_format = "channels_first")(x)
 x = Conv3D(12, (3, 1, 1), activation='relu', padding='same', data_format = "channels_first")(x)
-encoded = MaxPooling3D((3, 1, 1), padding='same', data_format = "channels_first")(x)
+encoded = MaxPooling3D((2, 1, 1), padding='same', data_format = "channels_first")(x)
 
 # at this point the representation is (11, 1, 1, 1) i.e. 11-dimensional
-x = UpSampling3D((3, 1, 1), data_format = "channels_first")(encoded)
+x = UpSampling3D((2, 1, 1), data_format = "channels_first")(encoded)
 x = Conv3D(12, (3, 1, 1), activation='relu', padding='same', data_format = "channels_first")(x)
+x = UpSampling3D((2, 1, 1), data_format = "channels_first")(x)
+x = Conv3D(10, (3, 1, 1), activation='relu', padding='same', data_format = "channels_first")(x)
 x = UpSampling3D((3, 2, 2), data_format = "channels_first")(x)
 x = Conv3D(8, (3, 3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
-x = UpSampling3D((4, 2, 2), data_format = "channels_first")(x)
-x = Conv3D(4, (5, 3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
+x = UpSampling3D((3, 2, 2), data_format = "channels_first")(x)
+x = Conv3D(6, (5, 3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
 x = UpSampling3D((5, 2, 2), data_format = "channels_first")(x)
-x = Conv3D(2, (7, 3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
-decoded = Conv3D(1, (1, 1, 1), activation='tanh', padding='same', data_format = "channels_first")(x)
+x = Conv3D(4, (7, 3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
+decoded = Conv3D(1, (7, 3, 3), activation='tanh', padding='same', data_format = "channels_first")(x)
 
 autoencoder = Model(input_img, decoded)
 autoencoder.compile(optimizer='sgd', loss='mean_squared_error', metrics = ['accuracy'])
@@ -61,7 +65,7 @@ array_patches = np.load(path_unlab_patches)
 
 t1 = time.time()
 
-cae = autoencoder.fit(x=array_patches, y=array_patches, batch_size=100, epochs=250, callbacks=[early_stopping])
+cae = autoencoder.fit(x=array_patches[0:130000,:,:,:,:], y=array_patches[0:130000,:,:,:,:], batch_size=100, epochs=250, callbacks=[early_stopping])
 
 t2 = time.time()
 t2_1 = t2 - t1
