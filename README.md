@@ -8,7 +8,7 @@ This project focuses on establishing a framework for hyperspectral image classif
 
 In the first stage of the experiment, I used both 2d-convolutional network and 3d-convolutional network as autoencoder to produce encoded features. The networks were pre-trained by Hyperion data, and were applied to the Indian Pines data set. Compared with PCA, the results produced by DeHIC is very promising.
 
-<img src="https://github.com/jingge326/MaterialFolder/blob/master/class_num.png" width = "600" height = "541" alt="" align=center />
+<img src="https://github.com/jingge326/MaterialFolder/blob/master/class_num.png" width = "500" height = "451" alt="" align=center />
 
 Results for the first phase of experiments is shown as Table 2.
 
@@ -30,7 +30,9 @@ Patches were constructed from Hyperion data sets(shown in Figure 2) for the trai
 
 <img src="https://github.com/jingge326/MaterialFolder/blob/master/HyperPatches.png" width = "800" height = "166" alt="" align=center />
 
-The total number of Hyperion patches used in the experiment is 189466
+Band resampling is needed for both unlabelled and labelled data to make them have same spectral bands which is essential of the pre-train process of networks. 180 bands were left after band resampling.
+
+The total number of Hyperion patches used in the experiment is 189466.
 
 ## Labelled Data ##
 
@@ -47,7 +49,7 @@ The way of constructing patches from Indian Pines has two significant difference
 
 <img src="https://github.com/jingge326/MaterialFolder/blob/master/center.png" width = "600" height = "214" alt="" align=center />
 
-The total number of Indian Pines patches used in the experiment is 145\*145=21025
+The total number of Indian Pines patches used in the experiment is 145\*145=21025.
 
 ## Functions of Each File ##
 - **samples\_select_pos.py**
