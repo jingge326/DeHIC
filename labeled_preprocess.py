@@ -1,11 +1,11 @@
 #-*-coding:UTF-8-*-
 """
-Processing labeled Hyperion data.
+Processing Indian Pines data set. 
 
-interpolation
-scale
-Constructing batches from labeled data for subsequent network training and 
-predicting
+Including:
+Resampling spectral values
+Normalizing pixel values within each band
+Constructing patches for subsequent network training and predicting
 
 """
 # Authors: Jingge Xiao <jingge.xiao@gmail.com>
@@ -21,29 +21,38 @@ import os
 import matplotlib.pyplot as plt
 
 
-# Original file path
-path_mat = r'M:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected.mat'
 
-# Set path of output data
-path_interp_ip = r'M:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected_interp.npy'
+# Set the dimension of convolution kernel(Only 2 or 3 is supported)
+conv_d = 3
 
-# Set path of output data
-path_scaled_ip = r'M:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_corrected_interp_scaled.npy'
+# Set patch size, which have to be same as that of unlabelled data.
+img_size = 8
 
-# Path of input label value
-path_lab_mat = r'M:\DeepLearning\Exp\data\Labeled\IndianPines\Indian_pines_gt.mat'
+# Set number of bands adopted in experiments
+num_bands = 180
+
+# Set output path of common files
+path_ip_base =  r"M:\DeepLearning\Exp\data\original\Labeled\IndianPines"
+
+# Path of input labeled data
+path_mat = os.path.join(path_ip_base, 'Indian_pines_corrected.mat')
+path_lab_mat = os.path.join(path_ip_base, 'Indian_pines_gt.mat')
+
 # Path of output label value
-hyper_lab_str = r"M:\DeepLearning\Exp\data\npy\ip\original_data\lable.npy"
+path_ip_labels = os.path.join(path_ip_base, "lable.npy")
+
+# Set path of output data
+path_scaled_ip = r'M:\DeepLearning\Exp\data\ing\180\ip\basic\Indian_pines_corrected_interp_scaled.npy'
 
 # Paths of files containing spectral information for spectral resampling
-path_ip_spec = r'M:\DeepLearning\Exp\data\Unlabled\IndianPines.csv'
-path_hyper_spec = r'M:\DeepLearning\Exp\data\Unlabled\Hyperion.csv'
+path_ip_spec = r'M:\DeepLearning\Exp\data\original\IndianPines.csv'
+path_interp_spec = r'M:\DeepLearning\Exp\data\original\pos_180.csv'
 
 # Set path of output data
-path_batches = r'M:\DeepLearning\Exp\data\npy\ip\original_data'
-
-# Set batch size, which have to be same as that of unlabeled data.
-img_size = 8
+if conv_d == 2:
+    path_ip_patches = r"M:\DeepLearning\Exp\data\ing\180\ip\2d_conv\patches_ip_2d.npy"
+else:
+    path_ip_patches = r"M:\DeepLearning\Exp\data\ing\180\ip\3d_conv\patches_ip_3d.npy"
 
 # Read original data
 mat_contents = sio.loadmat(path_mat)
@@ -59,19 +68,19 @@ for i_row in reader_ip_csv:
     list_ip_points.append(float(i_row[0]))
 array_ip_points=np.array(list_ip_points)
 
-list_hyper_points = []
-reader_hyper_csv = csv.reader(open(path_hyper_spec, encoding='utf-8'))
-for i_row in reader_hyper_csv:
-    list_hyper_points.append(float(i_row[0]))
-array_hyper_points=np.array(list_hyper_points)
+list_interp_points = []
+reader_interp_csv = csv.reader(open(path_interp_spec, encoding='utf-8'))
+for i_row in reader_interp_csv:
+    list_interp_points.append(float(i_row[0]))
+array_interp_points=np.array(list_interp_points)
 
 # Spectral resampling
-interp_image = np.zeros((len(array_hyper_points), original_image.shape[1],original_image.shape[2]))
+interp_image = np.zeros((len(array_interp_points), original_image.shape[1],original_image.shape[2]))
 for r in range(0,original_image.shape[1]):
     for c in range(0, original_image.shape[2]):
         ip_spec_array = original_image[:,r,c]
         f = sip.interp1d(array_ip_points, ip_spec_array)
-        interp_image[:,r,c] = f(array_hyper_points)
+        interp_image[:,r,c] = f(array_interp_points)
 
 # Expand the array for scale
 array_expand = interp_image[:,0,:]
@@ -89,7 +98,7 @@ for i_row in range(0, array_scaled.shape[1]):
 
 # Output the interpolated and scaled array
 np.save(path_scaled_ip, array_scaled)
-
+print("Interp and Scaling data: Done!")
 
 # change this equation if change img_size
 mar_size = int(img_size/2)
@@ -115,18 +124,16 @@ larger_cols = array_larger.shape[2]
 
 #draw the picture
 mx_data = array_larger[0, 0: larger_rows, 0: larger_cols]
-i = 44
-j = 44
 #mx_data = array_larger[80, i:i+5, j:j+5]
 fig = plt.figure(figsize=(20,20))
 ax = fig.add_subplot(223)
-cmap=plt.cm.hot #可以使用自定义的colormap  
+cmap=plt.cm.hot
 im=ax.imshow(mx_data,cmap=cmap)  
 plt.colorbar(im)
 
 
 
-# construct pixel batchs
+# construct pixel patchs
 list_sub_image = []
 npy_cnt = 0
 for i in range(0, larger_rows):
@@ -141,7 +148,10 @@ for i in range(0, larger_rows):
                 t_cube = np.array([[t_vector, t_vector], [t_vector, t_vector]]).transpose((2, 0, 1))
                 sub_image[:, int(img_size/2) -1: int(img_size/2) +1, int(img_size/2) - 1:int(img_size/2) +1] = t_cube
                 
-                list_sub_image.append(sub_image)
+                if conv_d == 2:
+                    list_sub_image.append(sub_image)
+                else:
+                    list_sub_image.append(sub_image.reshape((1, num_bands, img_size, img_size)))
                 
         #        # limit the length of lists in order to avoid much too large npy files
         #        if len(list_sub_image) == 10000:
@@ -154,7 +164,7 @@ for i in range(0, larger_rows):
         #            print(npy_cnt)
    
 # output the last list to file 
-np.save(os.path.join(path_batches, 'patches_ip.npy'), np.array(list_sub_image))
+np.save(path_ip_patches, np.array(list_sub_image))
 
 
 # Convert labeled data
@@ -167,4 +177,4 @@ for i_row_lab in np.arange(0, 145):
     for i_col_lab in np.arange(0, 145):
         list_lab.append(original_array_lab[i_row_lab, i_col_lab])
     
-np.save(hyper_lab_str, np.array(list_lab))
+np.save(path_ip_labels, np.array(list_lab))

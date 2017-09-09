@@ -1,11 +1,6 @@
-'''
-Normally, in the decoder, the final
-projection to the space where the image is reconstructed is linear, however
-this does not have to be the case for a residual block as the degree to which
-its output is linear or non-linear is determined by the data it is fed.
-However, in order to cap the reconstruction in this example, a hard softmax is
-applied as a bias because we know the MNIST digits are mapped to [0,1].
-'''
+
+# Trains a Stacked What-Where AutoEncoder built on residual blocks on the MNIST dataset.
+
 from __future__ import print_function
 import numpy as np
 

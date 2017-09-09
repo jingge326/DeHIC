@@ -1,3 +1,17 @@
+#-*-coding:UTF-8-*-
+"""
+An example of 2d-convolutional autoencoder
+The autoencoder network is pretrained by nearly 1.9 million unlabelled hyperion patches.
+As for the classification of Indian Pines dataset, autoencoder network is trained 
+again by Indian Pines dataset patches without label. Then the encoder part is extracted 
+and used to produce encoded features. Finally, features generated from convolutional 
+encoder is fed to SVM classifier.
+
+"""
+# Authors: Jingge Xiao <jingge.xiao@gmail.com>
+#
+# Created on Fri Jul 28 10:21:50 2017
+
 import numpy as np
 import os
 import time
@@ -11,46 +25,46 @@ os.environ["CUDA_VISIBLE_DEVICES"]="1"
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D
 from keras.models import Model
 
+num_bands = 180
 num_classes = 16
 
-unlab_dir_str = r"M:\DeepLearning\Exp\data\npy\hyper\list"
+path_ip = r"M:\DeepLearning\Exp\data\ing\180\ip\2d_conv"
 
-path_unlab_batches = r"M:\DeepLearning\Exp\data\npy\hyper\unlabel_batches.npy"
-path_lab_batches = r"M:\DeepLearning\Exp\data\npy\ip\original_data\batches_ip.npy"
+path_unlab_patches = r"M:\DeepLearning\Exp\data\ing\180\hyper\2d_conv\unlabel_patches.npy"
 
-path_cae_save = r'M:\DeepLearning\Exp\data\npy\ip\cae_model.h5'
-path_encoder_save = r'M:\DeepLearning\Exp\data\npy\ip\encoder_model.h5'
-path_cae_lab_save = r'M:\DeepLearning\Exp\data\npy\ip\cae_model_lab.h5'
-path_encoder_lab_save = r'M:\DeepLearning\Exp\data\npy\ip\encoder_model_lab.h5'
+path_lab_patches = os.path.join(path_ip, "patches_ip_2d.npy")
 
-path_x_train = r'M:\DeepLearning\Exp\data\npy\ip\training_conv_x.npy'
-path_y_train = r'M:\DeepLearning\Exp\data\npy\ip\training_conv_y.npy'
-path_x_test = r'M:\DeepLearning\Exp\data\npy\ip\validation_conv_x.npy'
-path_y_test = r'M:\DeepLearning\Exp\data\npy\ip\validation_conv_y.npy'
+path_x_train = os.path.join(path_ip, "training_2d_conv_x.npy")
+path_y_train = os.path.join(path_ip, "training_2d_conv_y.npy")
+path_x_test = os.path.join(path_ip, "validation_2d_conv_x.npy")
+path_y_test = os.path.join(path_ip, "validation_2d_conv_y.npy")
 
-input_img = Input(shape=(175, 8, 8))
+path_cae_save = os.path.join(path_ip, "cae_model_2d_12.h5")
+path_encoder_save = os.path.join(path_ip, "encoder_model_2d_12.h5")
+path_cae_lab_save = os.path.join(path_ip, "cae_model_lab_2d_12.h5")
+path_encoder_lab_save = os.path.join(path_ip, "encoder_model_lab_2d_12.h5")
 
-x = Conv2D(122, (3, 3), activation='relu', padding='same', data_format = "channels_first")(input_img)
+input_img = Input(shape=(num_bands, 8, 8))
+
+x = Conv2D(144, (3, 3), activation='relu', padding='same', data_format = "channels_first")(input_img)
 x = Conv2D(88, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
 x = MaxPooling2D((2, 2), padding='same', data_format = "channels_first")(x)
 x = Conv2D(44, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
 x = Conv2D(22, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
 x = MaxPooling2D((2, 2), padding='same', data_format = "channels_first")(x)
-x = Conv2D(11, (2, 2), activation='relu', padding='same', data_format = "channels_first")(x)
-x = Conv2D(6, (2, 2), activation='relu', padding='same', data_format = "channels_first")(x)
+x = Conv2D(12, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
 encoded = MaxPooling2D((2, 2), padding='same', data_format = "channels_first")(x)
 
-# at this point the representation is (6, 1, 1) i.e. 6-dimensional
+# at this point the representation is (12, 1, 1) i.e. 12-dimensional
 x = UpSampling2D((2, 2), data_format = "channels_first")(encoded)
-x = Conv2D(6, (2, 2), activation='relu', padding='same', data_format = "channels_first")(x)
-x = Conv2D(11, (2, 2), activation='relu', padding='same', data_format = "channels_first")(x)
+x = Conv2D(12, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
 x = UpSampling2D((2, 2), data_format = "channels_first")(x)
-x = Conv2D(22, (2, 2), activation='relu', padding='same', data_format = "channels_first")(x)
+x = Conv2D(22, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
 x = Conv2D(44, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
 x = UpSampling2D((2, 2), data_format = "channels_first")(x)
 x = Conv2D(88, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
-x = Conv2D(122, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
-decoded = Conv2D(175, (3, 3), activation='sigmoid', padding='same', data_format = "channels_first")(x)
+x = Conv2D(144, (3, 3), activation='relu', padding='same', data_format = "channels_first")(x)
+decoded = Conv2D(num_bands, (3, 3), activation='tanh', padding='same', data_format = "channels_first")(x)
 
 autoencoder = Model(input_img, decoded)
 autoencoder.compile(optimizer='sgd', loss='mean_squared_error', metrics = ['accuracy'])
@@ -58,12 +72,11 @@ autoencoder.compile(optimizer='sgd', loss='mean_squared_error', metrics = ['accu
 # Setting when to stop training
 early_stopping = EarlyStopping(monitor='loss', patience=5)
 
-# Training with unlabeled data
-array_batches = np.load(path_unlab_batches)
+# Training with unlabelled data
+array_patches = np.load(path_unlab_patches)
 t1 = time.time()
 
-cae = autoencoder.fit(x=array_batches, y=array_batches, batch_size=100, 
-                      epochs=250, callbacks=[early_stopping])
+cae = autoencoder.fit(x=array_patches, y=array_patches, batch_size=100, epochs=250, callbacks=[early_stopping])
 
 t2 = time.time()
 t2_1 = t2 - t1
@@ -77,10 +90,9 @@ encoder.save(path_encoder_save)
 
 
 # Train again using labeled data
-array_batches_lab = np.load(path_lab_batches)
+array_patches_lab = np.load(path_lab_patches)
 t3 = time.time()
-cae = autoencoder.fit(x=array_batches_lab, y=array_batches_lab, batch_size=100, 
-                      epochs=250, callbacks=[early_stopping])
+cae = autoencoder.fit(x=array_patches_lab, y=array_patches_lab, batch_size=100, epochs=250, callbacks=[early_stopping])
 t4 = time.time()
 t4_3 = t4 - t3
 

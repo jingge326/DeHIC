@@ -1,10 +1,8 @@
 #-*-coding:UTF-8-*-
 """
-Plotting curves of Hyperspectral data.
-
 Plotting curves of Hyperspectral data by pixels to faciliate spectral resampling
 
-This not necessary for data preprocess.
+This not necessary for data process.
 
 """
 # Authors: Jingge Xiao <jingge.xiao@gmail.com>

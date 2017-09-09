@@ -1,8 +1,8 @@
 #-*-coding:UTF-8-*-
 """
-Processing unlabeled Hyperion data.
+Normalizing pixel values within each band
 
-Splitting original Hyperion data into patches for subsequent network training
+Mean and std are calculated using all unlabelled data
 
 """
 # Authors: Jingge Xiao <jingge.xiao@gmail.com>
@@ -12,20 +12,22 @@ Splitting original Hyperion data into patches for subsequent network training
 import numpy as np
 import gdal
 import os
+import gc
 
+interp_bands = 180
 
-# set path of input image data
-str_input_path = r'C:\DeepLearning\Exp\data\tif'
-
-# set path of output scaled image data
-str_output_path = r'C:\DeepLearning\Exp\data\tif_scaled'
+# set path of interpolated image data
+path_interp = r'E:\DeepLearning\Exp\data\tif_interp'
 
 # set output path of statistics data file
-str_stat_path = r"C:\DeepLearning\Exp\data\tif_scaled\stat.npy"
+path_stat = r"E:\DeepLearning\Exp\data\tif_scaled_interp\stat.npy"
+
+# set path of scaled image data
+path_scaled = r'E:\DeepLearning\Exp\data\tif_scaled_interp'
 
 # read the list of files
 list_files_path = []
-for i in os.walk(str_input_path):
+for i in os.walk(path_interp):
     for j in i[2]:
         str_file_format = j[-3:]
         if str_file_format == 'tif':
@@ -36,7 +38,7 @@ for i in os.walk(str_input_path):
 
 # Compute the global mean and the global standard deviation
 list_stat = []
-for i_band in range(0, 175):
+for i_band in range(0, interp_bands):
     list_data = []
     for f in list_files_path:
         # Read image
@@ -47,7 +49,7 @@ for i_band in range(0, 175):
         for i_row in range(0, rows):
             for i_col in range(0, cols):
                 data_pixel = dsmatrix[i_band, i_row, i_col]
-                if data_pixel != 0:
+                if data_pixel > 0.0:
                     list_data.append(data_pixel)
     
         print(f)
@@ -61,13 +63,17 @@ for i_band in range(0, 175):
     print(list_stat[i_band])
     
 
-np.save(str_stat_path, list_stat) 
+np.save(path_stat, list_stat) 
 
+ # collect memory
+del(dsmatrix)
+gc.collect()
 
+array_stat = np.load(path_stat)
 
 # Scale data
 # read the list of files
-for i_files in os.walk(str_input_path):
+for i_files in os.walk(path_interp):
     for str_name in i_files[2]:
         str_file_format = str_name[-3:]
         if str_file_format == 'tif':
@@ -75,27 +81,26 @@ for i_files in os.walk(str_input_path):
             
             # Read image
             dataset = gdal.Open(str_tif_path)
-            dsmatrix = dataset.ReadAsArray(xoff=0, yoff=0, xsize=dataset.RasterXSize, ysize=dataset.RasterYSize)
+            dsmatrix_scaled = dataset.ReadAsArray(xoff=0, yoff=0, xsize=dataset.RasterXSize, ysize=dataset.RasterYSize)
             
             # Get Geographic meta data
             geo_trans_list = dataset.GetGeoTransform()
             proj_str = dataset.GetProjection()
             num_bands = dataset.RasterCount
             # Unfold array into pandas DataFrame
-            rows = dsmatrix.shape[1]
-            cols = dsmatrix.shape[2]
-                
-            dsmatrix_scaled = np.zeros_like(a = dsmatrix, dtype = np.float)
+            rows = dsmatrix_scaled.shape[1]
+            cols = dsmatrix_scaled.shape[2]
             
-            for i_band in range(0, num_bands):
-                for i_row in range(0, rows):
-                    for i_col in range(0, cols):
-                        data_pixel = dsmatrix[i_band, i_row, i_col]
-                        if data_pixel != 0:
-                            dsmatrix_scaled[i_band, i_row, i_col] = (data_pixel - list_stat[i_band][1]) / list_stat[i_band][2]
-        
+            
+            for i_row in range(0, rows):
+                for i_col in range(0, cols):
+                    if np.mean(dsmatrix_scaled[:, i_row, i_col])!=0.0:
+                        for i_band in range(0, num_bands):
+                            data_pixel = dsmatrix_scaled[i_band, i_row, i_col]
+                            dsmatrix_scaled[i_band, i_row, i_col] = (data_pixel - array_stat[i_band, 1]) / array_stat[i_band, 2]
+            
             # Set output file path
-            str_out_tif = os.path.join(str_output_path, str_name)
+            str_out_tif = os.path.join(path_scaled, str_name)
             
             # Output result in "GeoTiff" format           
             driver=gdal.GetDriverByName("GTiff")

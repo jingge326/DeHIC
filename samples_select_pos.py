@@ -1,9 +1,11 @@
-# -*- coding: utf-8 -*-
+#-*-coding:UTF-8-*-
 """
-Created on Thu Aug 24 00:07:40 2017
+Randomly select positions of samples for training and validation 
 
-@author: alienware
 """
+# Authors: Jingge Xiao <jingge.xiao@gmail.com>
+#
+# Created on Fri Jul 28 10:21:50 2017
 
 import numpy as np
 import os

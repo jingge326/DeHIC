@@ -1,3 +1,6 @@
+
+# An example of using convolutional autoencoder on mnist dataset.
+
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D
 from keras.models import Model
 from keras.datasets import mnist
@@ -58,26 +61,3 @@ for i in range(n):
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
 plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-#tbCallBack = TensorBoard(log_dir=r'E:\Research\HyperspectralImageClassification\Experiment\Data\others', 
-#                         histogram_freq=1, write_graph=True, write_images=True)
-#
-#cae = autoencoder.fit(x_train, x_train,
-#                epochs=3,
-#                batch_size=128,
-#                shuffle=True,
-#                validation_data=(x_test, x_test),
-#                callbacks=[tbCallBack])
-

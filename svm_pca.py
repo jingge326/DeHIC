@@ -1,15 +1,19 @@
-# -*- coding: utf-8 -*-
+#-*-coding:UTF-8-*-
 """
-Created on Fri Aug 25 21:17:03 2017
+Basic implement of PCA classifier
 
-@author: alienware
 """
+# Authors: Jingge Xiao <jingge.xiao@gmail.com>
+#
+# Created on Fri Jul 28 10:21:50 2017
+
 from sklearn import svm
 import numpy as np
 import os
 from sklearn.metrics import cohen_kappa_score
 
-num_com = 11
+num_com = 12
+# num_com = 3
 
 sub_samples_str = r"M:\DeepLearning\Exp\data\npy\ip"
 
