@@ -26,19 +26,19 @@ Figure 1 is some examples of used Hyperion data sets
 
 <img src="https://github.com/jingge326/MaterialFolder/blob/master/Hyperion.png" width = "600" height = "318" alt="" align=center />
 
-Patches were constructed from Hyperion data sets(shown in Figure 2) for the training of networks. Each patch is a hyperspectral cube with shape 180\*8\*8(bands\*rows\*columns). The width and height of the cubes were 8 pixels, and the step is also 8 pixels. So there is no overlap between two adjacent patches.
+Patches were constructed from Hyperion data sets(shown in Figure 2) for training of networks. Each patch is a hyperspectral cube with shape 180\*8\*8(bands\*rows\*columns). The width and height of the cubes were 8 pixels, and the step is also 8 pixels. So there is no overlap between two adjacent patches.
 
 <img src="https://github.com/jingge326/MaterialFolder/blob/master/HyperPatches.png" width = "800" height = "166" alt="" align=center />
 
-Band resampling is needed for both unlabeled and labeled data to make them have same spectral bands which is essential of the pre-train process of networks. 180 bands were left after band resampling.
+Band resampling is needed for both unlabeled and labeled data to make them have same spectral bands which is essential of the pre-training process of networks. 180 bands were left after band resampling.
 
 The total number of Hyperion patches used in the experiment is 189466.
 
 ## Labeled Data ##
 
-labeled Indian Pines data set was used to evaluate DeHIC.
+Labeled Indian Pines data set was used to evaluate DeHIC.
 
-Indian Pines(shown in Figure 3) is a 200*145*145 data set that was collected over Northwestern Indiana. The original Indian Pines data set has 224 bands, but bands 104–108, 150–163, and 220–224 were removed due to atmospheric absorption or low signalto-noise ratio (SNR). The ground-truth contains 16 classes of different crops and crop mixtures. Indian Pines has a GSD of 20 m. 
+Indian Pines(shown in Figure 3) is a 200\*145\*145 data set that was collected over Northwestern Indiana. The original Indian Pines data set has 224 bands, but bands 104–108, 150–163, and 220–224 were removed due to atmospheric absorption or low signalto-noise ratio (SNR). The ground-truth contains 16 classes of different crops and crop mixtures. Indian Pines has a GSD of 20 m. 
 
 <img src="https://github.com/jingge326/MaterialFolder/blob/master/ip.png" width = "500" height = "214" alt="" align=center />
 
