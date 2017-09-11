@@ -44,8 +44,8 @@ Indian Pines(shown in Figure 3) is a 200\*145\*145 data set that was collected o
 
 The way of constructing patches from Indian Pines has two significant differences from that of Hypersion data sets.
 
-1. The step is 1 in Indian Pines while equals to width and height of patches in Hyperion data sets. So each patch in Indian Pines represents the pixel(target pixel) in the centre of the patch.
-2. In order to make the patches more representative to their target pixels and to make the patch rotate invariant, I copyed the value of target pixel to pixels on its right, bottom and bottom right(shown in Figure 4).
+1. The step is 1 in Indian Pines while equals to width and height of patches in Hyperion data sets. So each patch in Indian Pines represents the pixel(target pixel) which is in the centre of the patch.
+2. In order to make the patches more representative to their target pixels and to make them rotate invariant, I copyed the value of target pixel to pixels on its right, bottom and bottom right(shown in Figure 4).
 
 <img src="https://github.com/jingge326/MaterialFolder/blob/master/center.png" width = "600" height = "214" alt="" align=center />
 
@@ -61,7 +61,7 @@ The total number of Indian Pines patches used in the experiment is 145\*145=2102
 &emsp;&emsp;Resample of of spectral values
 
 &emsp;&emsp;Hypersion data to pretrain autoencoder networks should have the similiar spectral bands
-with data set to be classified.
+with data sets to be classified.
 
 - **unlabeled\_scale.py**
 
@@ -101,7 +101,7 @@ with data set to be classified.
 
 &emsp;&emsp;An example of 2d-convolutional autoencoder with 12 encoded features
 
-&emsp;&emsp;The autoencoder network is pretrained by nearly 1.9 million unlabeled hyperion patches. As for the classification of Indian Pines dataset, it is trained again by Indian Pines dataset patches without label. Then the encoder part is extracted and used to produce encoded features. Finally, features generated from convolutional  encoder is fed to SVM classifier.
+&emsp;&emsp;The autoencoder network is pretrained by nearly 1.9 million unlabeled hyperion patches. As for the classification of Indian Pines dataset, it is trained again by Indian Pines dataset patches without labels. Then the encoder part is extracted and used to produce encoded features. Finally, features generated from convolutional  encoder is fed to SVM classifier.
 
 - **cae\_3d_12.py**
 
@@ -131,7 +131,7 @@ with data set to be classified.
 
 - **example\_mnist_1.py**
 
-&emsp;&emsp;An example of using convolutional autoencoder on mnist dataset.
+&emsp;&emsp;An example of using convolutional autoencoder on MNIST dataset.
 
 - **example\_mnist_2.py**
 
@@ -140,5 +140,5 @@ with data set to be classified.
 ## In The End ##
 Although natural language processing, target detection, image classification and speech recognition have achieved great accuracy improvement with the development of machine learning in recent years, and many excellent applications have been brought into people's daily lives. The development of remote sensing images classification has not made an outstanding breakthrough, mainly due to the complexity of data, insufficient labeled samples and limited innovative methods. More work is needed in this field.
 
-DeHIC aims at promoting deep learning methods in hyperspectral image classification. It seeks to build a framework that enables deep learning methods to be more accurate and convenient in this field. In the first phase of the experiment, I tried convolutional autoencoder. However, as for the method, there so many others needed to evaluate and modify, such as CNN, RNN, LSTM, DBN, etc. I will try to add some residual blocks and deepen the current autoencoder network to see whether it can achieve better results in the next phase. Frankly, any suggestion or “commits” to DeHIC on GitHub is welcomed!
+DeHIC aims at promoting deep learning methods in hyperspectral image classification. It seeks to build a framework that enables deep learning methods to be more accurate and convenient in this field. In the first phase of the experiment, I tried convolutional autoencoder. However, as for methods, there so many others need to evaluate and modify, such as CNN, RNN, LSTM, DBN, etc. I will try to add some residual blocks and deepen the current autoencoder network to see whether it can achieve better results in the next phase. Frankly, any suggestion or “commits” to DeHIC on GitHub is welcomed!
 
