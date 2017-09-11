@@ -4,9 +4,9 @@
 
 ## Deep Learning Framework for Hyperspectral Image Classification ##
 
-This project focuses on establishing a framework for hyperspectral image classification using deep learning method. As is well known, supervised deep learning methods are currently state of the art for many machine learning problems, but these methods require large quantities of labeled data to be effective. Unfortunately, existing labeled HSI benchmarks are too small to directly train a deep supervised network. Alternatively, I used self-taught learning, which is an unsupervised method to learn feature extracting frameworks from unlabeled hyperspectral imagery. These models learn how to extract generalizable features by training on sufficiently large quantities of unlabeled data that are distinct from the target data set. Once trained, these models can extract features from smaller labeled target data sets.
+This project focuses on establishing a framework for hyperspectral image classification using deep learning methods. As is well known, supervised deep learning methods are currently state of the art for many machine learning problems, but these methods require large quantities of labeled data to be effective. Unfortunately, existing labeled HSI benchmarks are too small to directly train a deep supervised network. Alternatively, I used self-taught learning, which is an unsupervised method to learn feature extracting frameworks from unlabeled hyperspectral imagery. These models learn how to extract generalizable features by training on sufficiently large quantities of unlabeled data that are distinct from the target data set. Once trained, these models can extract features from smaller labeled target data sets.
 
-In the first stage of the experiment, I used both 2d-convolutional network and 3d-convolutional network as autoencoder to produce encoded features. The networks were pre-trained by Hyperion data, and were applied to the Indian Pines data set. Compared with PCA, the results produced by DeHIC is very promising!
+In the first stage of the experiment, I used both 2d-convolutional networks and 3d-convolutional networks as autoencoder to produce encoded features. The networks were pre-trained by Hyperion data, and were applied to the Indian Pines data set. Compared with PCA, the results produced by DeHIC is very promising!
 
 <img src="https://github.com/jingge326/MaterialFolder/blob/master/class_num.png" width = "500" height = "451" alt="" align=center />
 
@@ -14,13 +14,13 @@ Results for the first phase of experiments is shown as Table 2.
 
 <img src="https://github.com/jingge326/MaterialFolder/blob/master/results.png" width = "250" height = "180" alt="" align=center />
 
-The author is working on further experiments, and this repository will be updated as more promising results come out. This introduction will focus on explaining how to process labelled and unlabelled hyperspectral images to make them applicable to current deep learning methods. So users interested in deep learning or hyperspectral remote sensing, can try to find some learning materials on the Internet or contact the author(jingge.xiao@gmail.com).
+The author is working on further experiments, and this repository will be updated as more promising results come out. This introduction will focus on explaining how to process labeled and unlabeled hyperspectral images to make them applicable to current deep learning methods. So users interested in deep learning or hyperspectral remote sensing, can try to find some learning materials on the Internet or contact the author(jingge.xiao@gmail.com).
 
-## Unlabelled Data ##
+## Unlabeled Data ##
 
-Unlabelled Hyperion data sets were used to pretrain the networks.
+Unlabeled Hyperion data sets were used to pretrain the networks.
 
-Hyperion is an HSI sensor located on NASA’s EO-1 satellite. Hyperion data contain 242 VNIR/SWIR spectral bands; however, after drop “Bad Bands” and bands seriously affected by the absorption of water vapor, 175 bands are last. The GSD of each HSI data set is 30.5 m, which is larger than that of labeled data sets used in this experiment.
+Hyperion is an HSI sensor located on NASA’s EO-1 satellite. Hyperion data contain 242 VNIR/SWIR spectral bands; however, after dropping “Bad Bands” and bands seriously affected by the absorption of water vapor, 175 bands are last. The GSD of each HSI data set is 30.5 m, which is larger than that of labeled data sets used in this experiment.
 
 Figure 1 is some examples of used Hyperion data sets
 
@@ -30,13 +30,13 @@ Patches were constructed from Hyperion data sets(shown in Figure 2) for the trai
 
 <img src="https://github.com/jingge326/MaterialFolder/blob/master/HyperPatches.png" width = "800" height = "166" alt="" align=center />
 
-Band resampling is needed for both unlabelled and labelled data to make them have same spectral bands which is essential of the pre-train process of networks. 180 bands were left after band resampling.
+Band resampling is needed for both unlabeled and labeled data to make them have same spectral bands which is essential of the pre-train process of networks. 180 bands were left after band resampling.
 
 The total number of Hyperion patches used in the experiment is 189466.
 
-## Labelled Data ##
+## Labeled Data ##
 
-labelled Indian Pines data set was used to evaluate DeHIC.
+labeled Indian Pines data set was used to evaluate DeHIC.
 
 Indian Pines(shown in Figure 3) is a 200*145*145 data set that was collected over Northwestern Indiana. The original Indian Pines data set has 224 bands, but bands 104–108, 150–163, and 220–224 were removed due to atmospheric absorption or low signalto-noise ratio (SNR). The ground-truth contains 16 classes of different crops and crop mixtures. Indian Pines has a GSD of 20 m. 
 
@@ -60,18 +60,18 @@ The total number of Indian Pines patches used in the experiment is 145\*145=2102
 
 &emsp;&emsp;Resample of of spectral values
 
-&emsp;&emsp;Hypersion data to pretrain autoencoder network should have the similiar spectral bands
+&emsp;&emsp;Hypersion data to pretrain autoencoder networks should have the similiar spectral bands
 with data set to be classified.
 
 - **unlabeled\_scale.py**
 
 &emsp;&emsp;Normalizing pixel values within each band
 
-&emsp;&emsp;Mean and std are calculated using all unlabelled data
+&emsp;&emsp;Mean and std are calculated using all unlabeled data
 
 - **unlabeled\_produce_patches.py**
 
-&emsp;&emsp;Splitting original Hyperion data into patches for subsequent network training
+&emsp;&emsp;Splitting original Hyperion data into patches for subsequent networks training
 
 - **labeled\_preprocess.py**
 
@@ -83,7 +83,7 @@ with data set to be classified.
 
 &emsp;&emsp;Normalizing pixel values within each band
 
-&emsp;&emsp;Constructing patches for subsequent network training and predicting
+&emsp;&emsp;Constructing patches for subsequent networks training and predicting
 
 - **labeled\_split_2d.py**
 
@@ -101,7 +101,7 @@ with data set to be classified.
 
 &emsp;&emsp;An example of 2d-convolutional autoencoder with 12 encoded features
 
-&emsp;&emsp;The autoencoder network is pretrained by nearly 1.9 million unlabelled hyperion patches. As for the classification of Indian Pines dataset, autoencoder network is trained again by Indian Pines dataset patches without label. Then the encoder part is extracted and used to produce encoded features. Finally, features generated from convolutional  encoder is fed to SVM classifier.
+&emsp;&emsp;The autoencoder network is pretrained by nearly 1.9 million unlabeled hyperion patches. As for the classification of Indian Pines dataset, it is trained again by Indian Pines dataset patches without label. Then the encoder part is extracted and used to produce encoded features. Finally, features generated from convolutional  encoder is fed to SVM classifier.
 
 - **cae\_3d_12.py**
 
@@ -138,7 +138,7 @@ with data set to be classified.
 &emsp;&emsp;Trains a Stacked What-Where AutoEncoder built on residual blocks on the MNIST dataset.
 
 ## In The End ##
-Although natural language processing, target detection, image classification and speech recognition have achieved great accuracy improvement with the development of machine learning in recent years, and many excellent applications have been brought into people's daily lives. The development of remote sensing images classification has not made an outstanding breakthrough, mainly due to the complexity of data, insufficient labelled samples and limited innovative methods. More work is needed in this field.
+Although natural language processing, target detection, image classification and speech recognition have achieved great accuracy improvement with the development of machine learning in recent years, and many excellent applications have been brought into people's daily lives. The development of remote sensing images classification has not made an outstanding breakthrough, mainly due to the complexity of data, insufficient labeled samples and limited innovative methods. More work is needed in this field.
 
 DeHIC aims at promoting deep learning methods in hyperspectral image classification. It seeks to build a framework that enables deep learning methods to be more accurate and convenient in this field. In the first phase of the experiment, I tried convolutional autoencoder. However, as for the method, there so many others needed to evaluate and modify, such as CNN, RNN, LSTM, DBN, etc. I will try to add some residual blocks and deepen the current autoencoder network to see whether it can achieve better results in the next phase. Frankly, any suggestion or “commits” to DeHIC on GitHub is welcomed!
 
